@@ -1,4 +1,2 @@
-/sentimentAnalysis/aclImdb*
-/sentimentAnalysis/tweets.csv
 .twitter_keys.yaml
 tweets.csv
