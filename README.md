@@ -1,47 +1,50 @@
+@patrick
 
 # Machine Learning
 
-Dieses Notebook beinhaltet die Prüfungsleistung für Machine Learning bei Frau Minges. Es wurde erstellt von Patrick Mischka, Jan Grübener, Matthias Vonend, Aaron Schweig, Michael Angermeier und Troy Keßler.
+Dieses Notebook beinhaltet die Prüfungsleistung im Kurs WWI18SEA/C für Machine Learning bei Frau Minges. Es wurde erstellt von Patrick Mischka, Jan Grübener, Matthias Vonend, Aaron Schweig, Michael Angermeier und Troy Keßler.
 
 ## Inhalt
 
-Ziel ist hier mithilfe von Machine Learning eine Trading Recommendation für Ethereum zu entwickeln. Diese soll aus zwei Teilen bestehen, einmal aus einer technischen Analyse, wo ein LSTM Modell mithilfe historischen Preise und Indikatoren entwickelt und trainiert wird, und einmal aus einer Stimmunsanalyse auf Twitter, wofür ein weiteres Deep Neural Network entwickelt und trainiert wird. Letztendlich sollen die Ergebnisse dieser Modelle Entscheidungshilfen sein, um Ethereum zu handeln.
+Ziel ist mithilfe von Machine Learning eine Trading Recommendation für Ethereum zu entwickeln. Diese soll aus zwei Teilen bestehen, zum einen aus einer technischen Analyse, wo ein LSTM Modell unter Verwendung von historischen Preisen und Indikatoren entwickelt und trainiert wird, und zum Anderen aus einer Stimmungsanalyse auf Twitter, wofür ein weiteres Deep Neural Network entwickelt und trainiert wird. Letztendlich sollen die Ergebnisse dieser Modelle Entscheidungshilfen sein, um Ethereum zu handeln.
 
 ### 1. Sentimentmodell
 
-Im ersten Teil wird ein Sentimentmodell entwickelt und trainiert, das Ziel ist hier ein Modell zu entwickelt, welches Tweets auf ihre Stimmung bewerten kann.
+Im ersten Teil wird ein Sentimentmodell entwickelt und trainiert. Das Ziel ist hier ein Modell zu entwickelt, welches Tweets auf ihre Stimmung bewerten kann.
 
 ### 2. Technisches Modell
 
-Im zweiten Teil wird ein technisches Modell entwickelt und trainiert, das Ziel ist hier basierend auf historischen Preisen und anderen technischen Indikatoren den zukünftigen Preis für die nächsten 30 Tage vorherzusagen.
+Im zweiten Teil wird ein technisches Modell entwickelt und trainiert. Das Ziel ist hier, basierend auf historischen Preisverläufen und anderen technischen Indikatoren, den zukünftigen Preis für die nächsten 30 Tage vorherzusagen.
 
 ### 3. Ausführung
 
-Im dritten und letzten Teil werden die Modelle an APIs angeschlossen, sodass die Entscheidungshilfen live ausgeführt werden können.
+Im dritten und letzten Teil werden die Modelle an APIs angeschlossen, so dass die Entscheidungshilfen live ausgeführt werden können.
 
 ## Technologien
 
-Für das Modell wird [Tensorflow](https://www.tensorflow.org/) verwendet, zum plotten von Informationen nutzen wir [Matplotlib](https://matplotlib.org/stable/index.html) und zum verarbeiten von Daten [Pandas](https://pandas.pydata.org/). Weiterhin werden weitere utilities von [sklearn](https://scikit-learn.org/stable/) übernommen.
+Für das Modell wird [Tensorflow](https://www.tensorflow.org/) verwendet, zum Plotten von Informationen nutzen wir [Matplotlib](https://matplotlib.org/stable/index.html) und zum Verarbeiten von Daten [Pandas](https://pandas.pydata.org/). Außerdem werden weitere Utilities von [sklearn](https://scikit-learn.org/stable/) übernommen.
 
 ## Setup
 
-Um dieses Notebook zu benutzen müssen Python 3.x und folgende Packages installiert werden:
+Um dieses Notebook zu benutzen müssen Python 3.x (vorzugsweise 3.7.3) und folgende Packages installiert werden:
 
-* tensorflow
-* matplotlib
-* pandas
+* tensorflow==2.4.1
+* matplotlib==3.0.3
+* pandas==1.2.2
+* pandas_datareader==0.9.0
+* searchtweets-v2==1.0.7
 * sklearn
 
-Das Datenset fürs trainieren kann über [diesen Link](https://www.dropbox.com/s/ur7pw797mgcc1wr/tweets.csv?dl=0) heruntergeladen werden. Dabei muss die Datei "tweets.csv" in diesen Ordner abgelegt werden.
+Das Datenset für das Trainieren kann über [diesen Link](https://www.dropbox.com/s/ur7pw797mgcc1wr/tweets.csv?dl=0) heruntergeladen werden. Dabei muss die Datei "tweets.csv" in den gleichen Ordner wie dieses Notepad abgelegt werden.
 
 
 ## 1. Sentimentmodell
 
 In diesem Notebook wird ein Modell trainiert, welches Tweets live auf ihre Stimmung bewerten soll. Dafür wird ein Deep Neural Network erstellt, welches mit 1.6 Millionen Tweets trainiert wird. Hierbei handelt es sich um ein Klassifikationsproblem, es soll letztendlich entschieden werden, ob ein Tweet negativ (0), oder positiv (1) gestimmt ist.
 
-### Datenset
+### Datensatz
 
-Um nun das Modell möglichst gut darauf zu trainieren reale Tweets zu bewerten haben wir uns für ein Datenset entschieden, welches 1.6 Millionen bereits gelabelte Tweets enthält, dieses kann [hier](https://www.kaggle.com/kazanova/sentiment140) gefunden werden
+Um nun das Modell möglichst gut darauf zu trainieren reale Tweets zu bewerten haben wir uns für ein Datenset entschieden, welches 1.6 Millionen bereits gelabelte Tweets enthält. Dieses Datenset kann [hier](https://www.kaggle.com/kazanova/sentiment140) gefunden werden.
 
 
 ```python
@@ -62,23 +65,23 @@ from sklearn.utils import shuffle
 from tensorflow import feature_column
 ```
 
-### Laden des Datensets
+### Laden des Datensatzes
 
-Mithilfe von pandas wird das Datenset geladen, dabei werden nur die erste und die letzte Spalte geladen, da nur diese für uns von Interesse sind. Da es sich bei der ersten Spalte um die Stimmung des Tweets handelt wird diese mit "targets" gelabelt, die letzte Spalte beihaltet den eigentlichen Tweet, diese wird mit "text" gelabelt.
+Mithilfe von pandas wird das Datenset geladen. Dabei werden nur die erste und die letzte Spalte geladen, da nur diese für uns von Interesse sind. Da es sich bei der ersten Spalte um die Stimmung des Tweets handelt, wird diese mit "targets" gelabelt. Die letzte Spalte beinhaltet den eigentlichen Tweet, welcher mit "text" gelabelt wird.
 
 
 ```python
 dataframe = pd.read_csv("./tweets.csv", usecols=[0, 5], names=["target", "text"])
 ```
 
-Da das Datenset sortiert ist muss es randomisiert werden. Falls dies nicht gemacht werden würde, hätte dies einen negativen Einfluss auf das Lernen, da alle Daten die zuerst reinkommen negativ gelabelt sind. Somit würde das Modell denken, alles wäre negativ und würde sich entsprechend darauf einstellen, kommen dann letztendlich alle positiven Daten würde das Modell denken es gäbe nur positive Daten und würde letztendlich bei richtigen Daten immer eine positive Stimmung predicten, was nicht der Realtität entsprechen würde.
+Da das Datenset sortiert ist, muss es randomisiert werden. Falls dies nicht gemacht werden würde, hätte dies einen negativen Einfluss auf das Lernen. Zuerst würden alle negativ gelabelten Daten geladen werden, wodurch das Modell "denkt", dass alle Daten negativ wären. Das Modell würde sich entsprechend darauf einstellen. Werden positiven Daten verwerdet, würde das Modell annehmen, dass es nur positive Daten gäbe. Dementsprechend würde es bei richtigen (nicht-trainings) Daten immer eine positive Stimmung vorhersagen, was aber nicht der Realtität entsprechen würde.
 
 
 ```python
 dataframe = shuffle(dataframe)
 ```
 
-Zum validieren, dass das Datenset auch korrekt geladen wurde, es sollte eine Tabelle mit den ersten fünf Einträgen zu sehen sein
+Wenn der Datensatz korrekt geladen wurde sollte eine Tabelle mit den ersten fünf Einträgen zu sehen sein.
 
 
 ```python
@@ -112,29 +115,29 @@ dataframe.head()
   </thead>
   <tbody>
     <tr>
-      <th>860186</th>
+      <th>1583356</th>
       <td>4</td>
-      <td>more #Dollhouse please!!!!!</td>
+      <td>@shellrawlins no - I wasnt - I was reading the...</td>
     </tr>
     <tr>
-      <th>1304155</th>
+      <th>942980</th>
       <td>4</td>
-      <td>@FuckSparkB psssh... says wh0?!!</td>
+      <td>@demiguise Just make sure you're out of the st...</td>
     </tr>
     <tr>
-      <th>610224</th>
+      <th>1147242</th>
+      <td>4</td>
+      <td>had alot of fun with my boyfriend, my brothers...</td>
+    </tr>
+    <tr>
+      <th>270095</th>
       <td>0</td>
-      <td>@TiaMariaBrooker i have the dentist tomorrow</td>
+      <td>@GabriellaOlsson it really wont end... i hat t...</td>
     </tr>
     <tr>
-      <th>1566808</th>
+      <th>1220421</th>
       <td>4</td>
-      <td>to start with: http://www.bigoh.com.au  tell u...</td>
-    </tr>
-    <tr>
-      <th>1372662</th>
-      <td>4</td>
-      <td>@peppypri no sorry and all... just thought u m...</td>
+      <td>Gooooood morning  Class, gym, studying, sleep..</td>
     </tr>
   </tbody>
 </table>
@@ -142,9 +145,9 @@ dataframe.head()
 
 
 
-Um das trainieren des Modells zu überwachen und um die Accuracy des Modells hinterher zu errechnen wird das Datenset in drei Teile unterteilt. In einem Verhältnis von 80:20 wird das Datenset in Trainingsdaten und Testdaten unterteilt. Trainingsdaten dienen hier ausschließlich zum trainieren des Modells, Testdaten werden nach dem Trainieren dazu verwendet, um die Accuracy des Modells zu errechnen, diese sollen reale Daten simulieren. Der Grund, warum das Verhältnis stark auf der Seite der Trainingsdaten liegt, ist, weil mehr Trainingsdaten ein besseres Ergebnis versprechen, dabei muss die Anzahl der Daten bei den Testdaten nicht hoch sein, um die Accuracy zu bestimmen.
+Um das Trainieren des Modells zu überwachen und um die Trefferquote des Modells hinterher zu errechnen wird der Datensatz in drei Teile unterteilt. In einem Verhältnis von 80:20 wird der Datensatz in Trainingsdaten und Testdaten unterteilt. Trainingsdaten dienen hier ausschließlich zum Trainieren des Modells. Die Testdaten werden nach dem Trainieren dazu verwendet, um die Trefferquote des Modells zu errechnen. Diese sollen reale Daten simulieren. Dieses Verhältnis wurde gewählt, da mehr Trainingsdaten ein besseres Ergebnis versprechen. Die Anzahl der Testdaten muss hingegen nicht hoch sein, um die Trefferquote zu bestimmen.
 
-Weiterhin werden die Trainingsdaten wiederum in Trainingsdaten und Validationsdaten mit einem Verhältnis von 80:20 unterteilt. Die Validationsdaten werden dazu verwendet um das Training zu überwachen, nach jedem Epoch (Trainingsschritt) wird damit die aktuelle Accuracy bestimmt.
+Weiterhin werden die Trainingsdaten wiederum in Trainingsdaten und Validierungsdaten aufgeteilt. Auch hier wird ein Verhältnis von 80:20 angesetzt. Die Validierungsdaten werden dazu verwendet, um das Training zu überwachen. Nach jeder Epoche (Trainingsschritt) wird damit die aktuelle Trefferquote bestimmt.
 
 
 ```python
@@ -159,9 +162,9 @@ print(len(test), 'test tweets')
     1024000 training tweets
     256000 validation tweets
     320000 test tweets
+    
 
-
-Da jetzt das Datenset entsprechend aufgeteilt wurde kann es nun in das verlangte Tensorflowformat gebracht werden. Dafür werden die Features (text) und die Labels (labels) klar definiert. Zusätzlich wird eine Batchsize definiert, welche Daten gruppiert um das Lernen zu beschleunigen.
+Da jetzt der Datensatz entsprechend aufgeteilt wurde, kann er nun in das Tensorflow-Format gebracht werden. Dafür werden die Features (text) und die Labels (labels) klar definiert. Zusätzlich wird eine Batchgröße definiert, welche Daten gruppiert und dadurch das Lernen beschleunigt.
 
 
 ```python
@@ -181,7 +184,7 @@ raw_val_ds = df_to_dataset(val, batch_size)
 raw_test_ds = df_to_dataset(test, batch_size)
 ```
 
-Um zu validieren, dass die Konvertierung geklappt hat werden die ersten drei Einträge ausgelesen
+Um zu validieren, dass die Konvertierung erfolgreich war, werden die ersten drei Einträge ausgelesen.
 
 
 ```python
@@ -191,15 +194,17 @@ for text_batch, label_batch in raw_train_ds.take(1):
     print("Label:", label_batch.numpy()[i])
 ```
 
-    Tweet: b'Someones house/car alarm is going off and its fucking loud as fuck! '
+    Tweet: b'My dadys workin today  but will see him soon, love you!'
     Label: 0
-    Tweet: b"OMG! I must have the Hermes Black Crocodile Birkin bag. The waiting list is 3 years &amp;I can't wait a day longer. Anyone got connections? "
+    Tweet: b'getting green with arnold '
     Label: 4
-    Tweet: b'@mrspinkyivory aww pinky i hope everything works out 4  '
+    Tweet: b'New Song of the Moment #Pens fans! Hear Kardaz - The Mighty Guins 2007 no new version tho  at http://www.wjfuoco.com or http://is.gd/JZh3'
     Label: 0
+    
 
+@matthias
 
-Hier werden die Daten für das Modell normalisiert. Dies ist wichtig um unnötige Duplikate zu vermeiden, wie z.B. Wörter, die in manchen Tweets groß und in anderen wieder klein geschrieben werden. Zusätzlich können Usernames, welche mit "@" beginnen normalisiert werden, da der genaue username unwichtig für die sentiment prediction ist.
+Um unnötige Duplikate zu vermeiden, werden die Daten für das Modell normalisiert. Beispielsweiße werden Wörter, die in manchen Tweets groß und in anderen wieder klein geschrieben werden, angepasst. Zusätzlich können User-Namen, welche mit "@" beginnen normalisiert werden, da der genaue User-Name unwichtig für die Sentiment-prediction ist.
 
 
 ```python
@@ -208,9 +213,9 @@ def normalize_data(input_data):
   return tf.strings.regex_replace(lowercase, '@(\w*)|(\\n)|(https:\/\/t\.co[\w\/]*)', '')
 ```
 
-Nun können die Texte vektorisiert werden. Da ein neuronales Netz nicht mir Wörtern und Buchstaben arbeiten kann, müssen diese in Zahlen umgewandelt werden. Dafür werden die Tweets in Vektoren umgewandelt. Die Größe des Vektors wird dabei mit sequence_length definiert. Die Größe der sequence_length, also letztendlich die Größe des Vektors sollte in der Regel so groß sein, dass alle Wörter eines Tweets hereinpassen. Da die Anzahl an Zeichen auf 280 pro Tweet limitiert ist, und die durschnittliche Anzahl der Zeichen pro Wort im Englischen bei 5 liegt wird die sequence_length mit 56 definiert.
+Nun können die Texte vektorisiert werden. Da ein neuronales Netz nicht mit Wörtern und Buchstaben arbeiten kann, müssen diese in Zahlen umgewandelt werden. Dafür werden die Tweets in Vektoren umgewandelt. Die Größe des Vektors wird dabei mit sequence_length definiert. Die Größe der sequence_length, also die Größe des Vektors, sollte in der Regel so groß sein, dass alle Wörter eines Tweets hineinpassen. Da die Anzahl an Zeichen auf 280 pro Tweet limitiert ist, und die durchnittliche Anzahl der Zeichen pro Wort im Englischen bei 5 liegt, wird die sequence_length mit 56 definiert.
 
-Hier erhält jedes Wort eine fortlaufende Id, die Reihenfolge wird darüber bestimmt, welche Wörter zuerst vektorisiert werden. Dabei können aufgrund max_features maximal 10000 Wörter eingelesen werden, alle weiteren werden ignoriert, diese Menge an Vokabeln sollte aber ausreichen, da in der Alltagssprache lediglich zwei bis drei tausend Wörter verwendet werden. Somit kann jedes Wort zu einer Id gemappt werden, sodass man letztendlich ganze Sätze in einem Vektor abbilden kann. Damit lösen wir auch das Problem, dass ein neuronales Netz immer die gleiche Inputgröße benötigt, da die Vektorengröße immer der sequence_length enstpricht.
+Hier erhält jedes Wort eine fortlaufende Id. Die Reihenfolge dieser Ids ist durch die Reihenfolge in dem die Wörter vektorisiert wurden festgelegt. Dabei können aufgrund max_features maximal 10000 Wörter eingelesen werden. Alle weiteren Wörter werden ignoriert. Diese Menge an Vokabeln sollte aber ausreichen, da in der Alltagssprache lediglich zwei- bis dreitausend Wörter verwendet werden. Somit kann jedes Wort einer Id zugewiesen werden, sodass man ganze Sätze in einem Vektor abbilden kann. Da die Vektorengröße immer der sequence_length enstpricht, wird auch das Problem, dass ein neuronales Netz immer die gleiche Inputgröße benötigt, gelöst.
 
 Dafür wird hier ein Vektorlayer erstellt. Gleichzeitig können hier die Daten normalisiert werden.
 
@@ -226,7 +231,7 @@ vectorize_layer = TextVectorization(
     output_sequence_length=sequence_length)
 ```
 
-Hier werden die Trainingsdaten eingelesen, sodass die 10000 features gefüllt werden können, somit haben wir für die Tweets ein eigenes "Wörterbuch"
+Hier werden die Trainingsdaten eingelesen, so dass die 10000 Features gefüllt werden können. Es entsteht ein "Wörterbuch" für Tweets
 
 
 ```python
@@ -234,7 +239,7 @@ train_text = raw_train_ds.map(lambda x, y: x)
 vectorize_layer.adapt(train_text)
 ```
 
-Mit der Methode können wir gleich alle Datensets vektorisieren. Hier normalisieren wir noch das Label, sodass das Label eine Range von 0 bis 1, anstatt von 0 bis 4 hat. 
+Mit der Methode können wir alle Datensätze vektorisieren. Hier normalisieren wir das Label, so dass das Label eine Wertebereich von 0 bis 1, anstatt von 0 bis 4 besitzt. 
 
 
 ```python
@@ -243,7 +248,7 @@ def vectorize_text(text, label):
   return vectorize_layer(text), int(label / 4)
 ```
 
-Um zu testen, ob das vektorisieren der Tweets funktioniert können wir den ersten Tweet aus dem ersten Batch auslesen und vektorisieren.
+Um zu testen, ob das Vektorisieren der Tweets funktioniert, können wir den ersten Tweet aus dem ersten Batch auslesen und vektorisieren.
 
 
 ```python
@@ -254,18 +259,18 @@ print(label)
 print(vectorize_text(text, label))
 ```
 
-    tf.Tensor(b'Someones house/car alarm is going off and its fucking loud as fuck! ', shape=(), dtype=string)
+    tf.Tensor(b'My dadys workin today  but will see him soon, love you!', shape=(), dtype=string)
     tf.Tensor(0, shape=(), dtype=int64)
     (<tf.Tensor: shape=(1, 56), dtype=int64, numpy=
-    array([[5780,    1, 2253,    9,   41,   89,    7,   67,  589, 2048,   76,
-            5339,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    array([[   6,    1, 1992,   78,   21,   48,   65,  172, 1636,   43,  288,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-               0]])>, 0)
+               0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+               0]], dtype=int64)>, 0)
+    
 
-
-Mithilfe des Vektorlayers können wir die Ids wieder zu Wörtern zurückmappen, außerdem können wir die Größe unseres Wörterbuchs auslesen
+Mithilfe des Vektorlayers können wir von den Ids wieder auf die Wörtern zurückschließen. Außerdem können wir die Größe unseres Wörterbuchs auslesen.
 
 
 ```python
@@ -273,11 +278,11 @@ print("1234 ---> ", vectorize_layer.get_vocabulary()[1234])
 print('Vocabulary size: {}'.format(len(vectorize_layer.get_vocabulary())))
 ```
 
-    1234 --->  amazing!
+    1234 --->  11
     Vocabulary size: 10000
+    
 
-
-Nun vektorisieren wir alle benötigten Datensets
+Nun vektorisieren wir alle benötigten Datensätze.
 
 
 ```python
@@ -286,7 +291,7 @@ val_ds = raw_val_ds.map(vectorize_text)
 test_ds = raw_test_ds.map(vectorize_text)
 ```
 
-Aus Performancegründen können die Datensets weiter aufbereitet werden. Mit `.cache()` bleiben die Daten im Arbeitsspeicher, nachdem diese von der Festplatte geladen wurden. Somit kann sichergestellt werden, dass das Laden der Daten nicht das Bottleneck beim Training sein wird.
+Aus Performancegründen können die Datensätze weiter aufbereitet werden. Mit `.cache()` bleiben die Daten im Arbeitsspeicher, nachdem diese von der Festplatte geladen wurden. Somit kann sichergestellt werden, dass das Laden der Daten nicht der Flaschenhals beim Training sein wird.
 
 Mit `.prefetch()` können die Daten gleichzeitig mit dem Lernen präprozessiert werden.
 
@@ -299,13 +304,15 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 ```
 
-Schließlich definieren wir das eigentliche Modell. Die erste Layer ist ein Embedding-Layer. Dies sorgt dafür, dass jedes Wort wiederum einen eigenen Vektor erhält, dieser stellt die Bedeutung des Wortes dar. Diese Vektoren werden mit dem Modell mit der Zeit trainiert. Diese Embeddinglayer fügt eine weitere Dimension zum Outputvektor hinzu. Hier definieren wir mit der embedding_dim die Größe der Layers, das bedeutet, dass es 32 Nodes pro Layer gibt.
+@troy
 
-Für die nächste Layer wird `GlobalAveragePooling1D` verwendet. Diese reduziert die Dimension wieder um 1 und verrechnet dabei alle Informationen, sodass nichts verloren geht. Der Outputvektor wird dabei wieder auf eine feste Länge normalisiert.
+Schließlich definieren wir das eigentliche Modell. Der erste Layer ist ein Embedding-Layer. Dieser sorgt dafür, dass jedes Wort einen eigenen Vektor erhält, welcher die Bedeutung des Wortes darstellt. Diese Vektoren werden mit dem Modell über die Zeit trainiert. Dieser Embedding-Layer fügt eine weitere Dimension zum Outputvektor hinzu. Hier definieren wir mit der embedding_dim die Größe der Layer, das bedeutet, dass es 32 Nodes pro Layer gibt.
 
-Anschließend folgt ein fully-connected 32 Dense-Layer. Hier wurde eine Dropoutrate festgelegt, um Overfitting zu verhindern. Das Ziel hier ist random ausgewählte Nodes auf 0 zu setzen, damit das anspassen der Weights der einzelnen Nodes beim lernen gefördert wird.
+Als nächster Layer wird `GlobalAveragePooling1D` verwendet. Dieser reduziert die Dimension wieder um 1 und verrechnet dabei alle Informationen, sodass keine Informationen verloren gehen. Der Outputvektor wird dabei wieder auf eine feste Länge normalisiert.
 
-Letztendlich wird das letzte Layer mit einem Dense Layer zu einer einzigen Node verknüpft. Diese hat eine Range von 0 bis 1 und gibt das Ergenis aus.
+Anschließend folgt ein fully-connected 32 Dense-Layer. Hier wurde eine Dropoutrate festgelegt, um Overfitting zu verhindern. Das Ziel hier ist random ausgewählte Nodes auf 0 zu setzen, damit das anspassen der Weights der einzelnen Nodes beim Lernen gefördert wird.
+
+Letztendlich wird der letzte Layer mit einem Dense Layer zu einer einzigen Node verknüpft. Diese hat eine Range von 0 bis 1 und gibt das Ergenis aus.
 
 Wir können nun noch mit `.summary()` das Modell verifizieren.
 
@@ -323,7 +330,7 @@ model = tf.keras.Sequential([
 model.summary()
 ```
 
-    Model: "sequential"
+    Model: "sequential_1"
     _________________________________________________________________
     Layer (type)                 Output Shape              Param #   
     =================================================================
@@ -331,19 +338,19 @@ model.summary()
     _________________________________________________________________
     global_average_pooling1d (Gl (None, 32)                0         
     _________________________________________________________________
-    dropout (Dropout)            (None, 32)                0         
+    dropout_1 (Dropout)          (None, 32)                0         
     _________________________________________________________________
-    dense (Dense)                (None, 1)                 33        
+    dense_1 (Dense)              (None, 1)                 33        
     =================================================================
     Total params: 320,065
     Trainable params: 320,065
     Non-trainable params: 0
     _________________________________________________________________
+    
 
+Für das Trainieren müssen noch ein paar Parameter definiert werden. Für die Berechnung des Fehlers (loss) verwenden wir die `BinaryCrossentropy` Funktion. Der Fehler gibt uns an, wie weit wir von der richtigen Prediction weg sind. Wir haben uns dafür entschieden, da wir einen sogenannten Binary Classifier haben, der uns eine Wahrscheinlichkeit von 0 bis 1 als Ergebnis gibt. Dabei arbeiten wir mit Logits, sodass die Labels als sogennante Logits betrachtet werden. Diese Darstellung als Wahrscheinlichkeit verspricht laut Tensorflow größere numerische Stabilität.
 
-Für das Trainieren müssen noch ein paar Parameter definiert werden. Für die Berechnung des Fehlers (loss) verwenden wir die `BinaryCrossentropy` Funktion. Der Fehler gibt uns an, wie weit wir von der richtigen Prediction weg sind. Wir haben uns dafür entschieden, da wir einen sogenannten Binary Classifier haben, der uns eine Wahrscheinlichkeit von 0 bis 1 als Ergebnis gibt. Dabei arbeiten wir mit Logits, sodass die Labels als sogennante Logits betrachtet werden, diese Darstellung als Wahrscheinlichkeit verspricht laut Tensorflow größere numerische Stabilität.
-
-Weiterhin verwenden wir für den Optimierungsalgorithmus den `Adam-Optimizer`. Wir haben uns für den Adam-Optimizer, im Gegensatz zum klassischen Stochastic Gradient Descent Algorithmus entschieden, da sich die Learningrate beim Adam-Optimizer mit der Zeit automatisch anpasst. Das ist besonders praktisch bei Natural Language Processing, da hier die Gradients in der Regel sehr gering sind. Dabei wird die Learningrate basierend auf der vorherigen Änderung der Weights angepasst. Hier haben wir eine sehr kleine Learningrate definiert, da wir ein sehr großes Datenset haben und nicht zu schnell in das Problem von Overfitting laufen wollen, weshalb langsameres lernen, also ein langsameres Anpassen der Weights, hier passender ist.
+Weiterhin verwenden wir für den Optimierungsalgorithmus den `Adam-Optimizer`. Wir haben uns für den Adam-Optimizer, im Vergleich zum klassischen Stochastic-Gradient-Descent-Algorithmus entschieden, da sich die Learningrate beim Adam-Optimizer mit der Zeit automatisch anpasst. Das ist besonders praktisch bei Natural-Language-Processing, da hier die Gradients in der Regel sehr gering sind. Dabei wird die Learningrate basierend auf der vorherigen Änderung der Weights angepasst. Hier haben wir eine sehr kleine Learningrate definiert, da wir ein sehr großes Datenset haben und nicht zu schnell in das Problem von Overfitting laufen wollen.
 
 
 ```python
@@ -352,7 +359,7 @@ model.compile(loss=losses.BinaryCrossentropy(from_logits=True),
               metrics=tf.metrics.BinaryAccuracy(threshold=0.0))
 ```
 
-Nun wird endlich das Modell trainiert. Dafür definieren wir mit epochs, wie oft wir über das Trainingsdatenset iterieren. Es werden in `model.fit()` die Trainingsdaten, die Validationsdaten und die Anzahl der Epochen angegeben. Tensorflow loggt den Fortschritt live in der Konsole aus, zusätzlich wird der Trainingsstatus in einem History-Objekt festgehalten.
+Nun wird das Modell trainiert. Dafür definieren wir mit epochs, wie oft wir über das Trainingsdatenset iterieren. In `model.fit()` werden die Trainingsdaten, die Validationsdaten und die Anzahl der Epochen angegeben. Tensorflow loggt den Fortschritt live in der Konsole aus und zusätzlich wird der Trainingsstatus in einem History-Objekt festgehalten.
 
 
 ```python
@@ -364,28 +371,28 @@ history = model.fit(
 ```
 
     Epoch 1/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.6864 - binary_accuracy: 0.5944 - val_loss: 0.6531 - val_binary_accuracy: 0.6940
+    3200/3200 [==============================] - 23s 7ms/step - loss: 0.6863 - binary_accuracy: 0.5994 - val_loss: 0.6518 - val_binary_accuracy: 0.6867
     Epoch 2/10
-    3200/3200 [==============================] - 15s 5ms/step - loss: 0.6393 - binary_accuracy: 0.6970 - val_loss: 0.6009 - val_binary_accuracy: 0.7191
+    3200/3200 [==============================] - 21s 7ms/step - loss: 0.6378 - binary_accuracy: 0.6976 - val_loss: 0.5995 - val_binary_accuracy: 0.7173
     Epoch 3/10
-    3200/3200 [==============================] - 14s 4ms/step - loss: 0.5902 - binary_accuracy: 0.7243 - val_loss: 0.5622 - val_binary_accuracy: 0.7406
+    3200/3200 [==============================] - 20s 6ms/step - loss: 0.5887 - binary_accuracy: 0.7252 - val_loss: 0.5611 - val_binary_accuracy: 0.7398
     Epoch 4/10
-    3200/3200 [==============================] - 20s 6ms/step - loss: 0.5542 - binary_accuracy: 0.7456 - val_loss: 0.5345 - val_binary_accuracy: 0.7560
+    3200/3200 [==============================] - 20s 6ms/step - loss: 0.5529 - binary_accuracy: 0.7461 - val_loss: 0.5336 - val_binary_accuracy: 0.7554
     Epoch 5/10
-    3200/3200 [==============================] - 17s 5ms/step - loss: 0.5282 - binary_accuracy: 0.7598 - val_loss: 0.5152 - val_binary_accuracy: 0.7660
+    3200/3200 [==============================] - 20s 6ms/step - loss: 0.5272 - binary_accuracy: 0.7605 - val_loss: 0.5145 - val_binary_accuracy: 0.7657
     Epoch 6/10
-    3200/3200 [==============================] - 17s 5ms/step - loss: 0.5098 - binary_accuracy: 0.7694 - val_loss: 0.5021 - val_binary_accuracy: 0.7725
+    3200/3200 [==============================] - 20s 6ms/step - loss: 0.5093 - binary_accuracy: 0.7695 - val_loss: 0.5015 - val_binary_accuracy: 0.7723
     Epoch 7/10
-    3200/3200 [==============================] - 17s 5ms/step - loss: 0.4973 - binary_accuracy: 0.7757 - val_loss: 0.4934 - val_binary_accuracy: 0.7771
+    3200/3200 [==============================] - 21s 6ms/step - loss: 0.4970 - binary_accuracy: 0.7756 - val_loss: 0.4928 - val_binary_accuracy: 0.7767
     Epoch 8/10
-    3200/3200 [==============================] - 16s 5ms/step - loss: 0.4887 - binary_accuracy: 0.7803 - val_loss: 0.4875 - val_binary_accuracy: 0.7801
+    3200/3200 [==============================] - 21s 7ms/step - loss: 0.4887 - binary_accuracy: 0.7797 - val_loss: 0.4868 - val_binary_accuracy: 0.7802
     Epoch 9/10
-    3200/3200 [==============================] - 17s 5ms/step - loss: 0.4828 - binary_accuracy: 0.7835 - val_loss: 0.4834 - val_binary_accuracy: 0.7822
+    3200/3200 [==============================] - 21s 6ms/step - loss: 0.4830 - binary_accuracy: 0.7829 - val_loss: 0.4826 - val_binary_accuracy: 0.7826
     Epoch 10/10
-    3200/3200 [==============================] - 20s 6ms/step - loss: 0.4784 - binary_accuracy: 0.7859 - val_loss: 0.4803 - val_binary_accuracy: 0.7840
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4787 - binary_accuracy: 0.7854 - val_loss: 0.4795 - val_binary_accuracy: 0.7844
+    
 
-
-Nachdem das Modell nur trainiert ist können wir es mit den vorher festgelegten Testdatensatz testen. Diese sollen wie bereits erwähnt echte Daten simulieren. Dabei erhalten wir mit `model.evaluate()` den Loss und die Accuracy, welche bei rund 80% liegt
+Nachdem das Modell nur trainiert ist können wir es mit den vorher festgelegten Testdatensatz testen. Diese sollen wie bereits erwähnt echte Daten simulieren. Dabei erhalten wir mit `model.evaluate()` den Loss und die Accuracy, welche bei rund 80% liegt.
 
 
 ```python
@@ -395,12 +402,12 @@ print("Loss: ", loss)
 print("Accuracy: ", accuracy)
 ```
 
-    1000/1000 [==============================] - 3s 3ms/step - loss: 0.4803 - binary_accuracy: 0.7841
-    Loss:  0.4802757203578949
-    Accuracy:  0.7840999960899353
+    1000/1000 [==============================] - 3s 3ms/step - loss: 0.4795 - binary_accuracy: 0.7839
+    Loss:  0.47949355840682983
+    Accuracy:  0.7839499711990356
+    
 
-
-In dem History-Objekt können wir nun sehen, welche Daten Tensorflow für uns aufgezeichnet hat
+In dem History-Objekt können wir nun sehen, welche Daten Tensorflow für uns aufgezeichnet hat.
 
 
 ```python
@@ -415,9 +422,9 @@ history_dict.keys()
 
 
 
-Mithilfe von Matplotlib können wir den Loss plotten und beobachten, wie diese sich beim lernen verhalten hat. Optimalerweise sollte diese mit der Zeit runtergehen, da mit dem Anpassen der Weights das Modell immer genauere Aussagen treffen sollte und somit der Fehler immer geringer wird.
+Mithilfe von Matplotlib können wir den Loss plotten und beobachten, wie sich diese während des Lernens verhalten hat. Optimalerweise sollte diese mit der Zeit sinken, da mit dem Anpassen der Weights das Modell immer genauere Aussagen treffen sollte und somit auch der Fehler immer geringer werden sollte.
 
-Wir können erkennen, dass dies tatsächlich der Fall ist, dabei fällt der Loss fast exponentiell. Logischerweise wird der Trainingsloss immer geringer, als Bestätigung für die Verbesserung des Modells dient hier die Validationloss. Diese ist fast gleich, sodass wir davon ausgehen können, dass die Anzahl der Fehlinterpretierungen tatsächlich geringer wurde.
+Wir können erkennen, dass dies tatsächlich der Fall ist. Der Loss fällt fast exponentiell. Logischerweise wird der Trainingsloss immer geringer. Als Bestätigung für die Verbesserung des Modells dient hier der Validationloss. Dieser ist fast gleich, sodass wir davon ausgehen können, dass die Anzahl der Fehlinterpretierungen tatsächlich geringer wurde.
 
 
 ```python
@@ -439,12 +446,14 @@ plt.show()
 ```
 
 
+    
 ![png](output_43_0.png)
+    
 
 
-Das gleiche können wir auch für die Accuracy machen. Hier sollte im Optimalfall die Accuracy mit der Zeit steigen. Dieses Verhalten können wir wieder an unserem Modell erkennen. Hier erinnert der Graph an eine Sättigungskurve. Das liegt daran, dass es mit der Zeit immer schwerer wird das Modell noch mehr zu verbessern, da das Lernen letztendlich eine Optimierung ist, dessen Verbesserung im späteren Verlauf nur mit höheren Aufwänden zu erreichen ist.
+Das Gleiche können wir auch für die Accuracy durchführen. Hier sollte im Optimalfall die Accuracy mit der Zeit steigen. Dieses Verhalten können wir wieder an unserem Modell erkennen. Hier erinnert der Graph an eine Sättigungskurve. Dies liegt daran, dass das Lernen letztendlich eine Optimierung ist und es mit der Zeit immer schwerer wird, das Modell noch mehr zu verbessern.
 
-An beiden Graphiken kann man jedoch gut erkennen, dass es zu keinem Overfitting kommt. Wenn wir die Accuracy betrachten, würde bei Overfitting die Accuracy der Testdaten weiter Ansteigen, während die Accuracy der Validationsdaten und die der Testdaten stagniert oder gar heruntergeht. Das gleiche würde analog mit dem Loss passieren.
+An beiden Graphiken kann man jedoch gut erkennen, dass es zu keinem Overfitting kommt. Wenn wir die Accuracy betrachten, würde bei Overfitting die Accuracy der Testdaten weiter ansteigen, während die Accuracy der Validationsdaten und die der Testdaten stagniert oder gar sinken. Das Gleiche würde analog mit dem Loss passieren.
 
 
 ```python
@@ -462,10 +471,12 @@ plt.show()
 ```
 
 
+    
 ![png](output_45_0.png)
+    
 
 
-Nun exportieren wir das fertige Modell. Da wir vorher die Texte vektorisiert haben, bevor sie in das Modell gegeben wurden, können wir hier ein Modell exportieren, welche die Texte beim Input vektorisiert. Dies macht uns jetzt das zukünftige Predicten einfacher. Zusätzlich fügen wir am Ende eine weitere Node mit einer Sigmoid Aktivierungsfunktion hinzu. Diese mappt uns alle Werte zwischen 0 und 1, sodass unsere definiert Sentiment Range eingehalten wird. Die Vektorisationlayer und die Sigmoid Node wurden beim lernen weggelassen, um die Effizienz zu erhöhen.
+Nun exportieren wir das fertige Modell. Da wir vorher die Texte vektorisiert haben, bevor sie in das Modell gegeben wurden, können wir hier ein Modell exportieren, welche die Texte beim Input vektorisiert. Dies macht uns das zukünftige Predicten einfacher, da das Model nicht immer neu trainiert werden muss. Zusätzlich fügen wir am Ende eine weitere Node mit einer Sigmoid Aktivierungsfunktion hinzu. Diese bildet alle Werte auf Werte zwischen 0 und 1 ab, sodass unsere definiert Sentiment-Range eingehalten wird. Der Vektorisationlayer und die Sigmoid Node wurden beim Lernen vernachlässigt, damit die Lerneffizienz höher ausfällt.
 
 
 ```python
@@ -476,7 +487,7 @@ sentiment_model = tf.keras.Sequential([
 ])
 ```
 
-Schließlich können wir ein paar Beispiele eingeben um zu sehen, was das Modell denkt. Dabei ist der erste Satz positiv, der zweite neutral und der letzte negativ. Anhand der Ergebnisse können wir sehen, dass das Modell ähnlich darüber denkt. Während der neutrale Satz mit rund 0.5 gewertet wird, wird der positive höher gewertet und der negative geringer.
+Schließlich können wir einige Beispiele eingeben, um zu sehen, wie sich das Modell verhält. Dabei ist der erste Satz positiv, der zweite neutral und der letzte negativ. Während der neutrale Satz mit rund 0.5 gewertet wird, wird der positive höher gewertet und der negative geringer.
 
 
 ```python
@@ -492,19 +503,21 @@ sentiment_model.predict(examples)
 
 
 
-    array([[0.8517132 ],
-           [0.51427764],
-           [0.41741896]], dtype=float32)
+    array([[0.85002184],
+           [0.5242844 ],
+           [0.42360997]], dtype=float32)
 
 
+
+@jan
 
 ## 2. Technisches Modell
 
-Bei dem zweiten Modell soll mithilfe von Finanzdaten eine Progrose erstellt werden, wie der Kursverlauf in den nächsten 30 Tagen sein wird. Für diese Progrose wird ein LSTM-Modell verwendet und die Prognose wird anhand von den Daten von Etherium in US-Dollar aufgebaut. 
+Bei dem zweiten Modell soll mithilfe von Finanzdaten eine Progrose erstellt werden, wie der Kursverlauf in den nächsten 30 Tagen sein wird. Für diese Progrose wird ein LSTM-Modell verwendet. Die Prognose wird anhand von des Kurses von Etherium zum US-Dollar aufgebaut. 
 
-### Datenset
+### Datensatz
 
-Die Daten zum Trainieren des Modelles werden von Yahoo abgefragt. Bei diesen Daten handelt es sich immer um den "Closing Price", also den Preis, den Etherium am Ende eines Tages hatte. Diese Preise werden bis in das Jahr 2015 geladen und in diesem Zeitraum gibt es insgesamt ca. 2000 Preisdaten. Zusätzlich zu den Preisdaten werden mithilfe von der "Technical Analysis Library" verschiedene technische Indikatoren berechnet. Anhand von diesen Indikatoren soll das Modell trainiert werden den Preis vorherzusagen.  
+Die Daten zum Trainieren des Modelles werden von Yahoo abgefragt. Bei diesen Daten handelt es sich stets um den "Closing Price", also den Preis, den Etherium am Ende eines Tages hatte. Diese Preise werden bis in das Jahr 2015 geladen. Dies entspricht insgesamt ca. 2000 Preisdaten. Zusätzlich zu den Preisdaten werden mithilfe von der "Technical Analysis Library" verschiedene technische Indikatoren berechnet. Anhand von diesen Indikatoren soll das Modell trainiert werden den Preis vorherzusagen.  
 
 
 ```python
@@ -527,7 +540,17 @@ from ta.volume import OnBalanceVolumeIndicator, AccDistIndexIndicator
 ```
 
 ### Laden und generieren der Daten
-Im Folgenden werden die Preisdaten von Etherium vom 2015 bis heute geladen. Anschließend werden 7 technische Indikatoren generiert und dem Datensatz hinzugefügt. Zusätzlich werden der Tag des Monats, der Tag der Woche und der Monat als eigene Indikatoren hinzugefügt. Dies ist sinnvoll, da hier ein LSTM-, also ein Zeitreihen-Modell verwendet wird und hierbei auf die Zeit eine sehr wichtige Rolle spielt, um Besonderheiten an beispielsweise dem ersten des Monats erkennen zu können. Außerdem werden die Daten nicht gemischt, da sonst der zeitliche Verlauf verloren geht.
+Im Folgenden werden die Preisdaten von Etherium von 2015 bis heute geladen. Anschließend werden 7 technische Indikatoren generiert und dem Datensatz hinzugefügt. Diese Indikatoren sind:
+
+* Kama
+* Percentage Price Oscillator
+* Rate of Change
+* Moving Average Convergence/Divergence
+* Relative Strength Index
+* Aaron Indicator
+* Bollinger bands
+
+Zusätzlich werden der Tag des Monats, der Tag der Woche und der Monat als eigene Indikatoren hinzugefügt. Dies ist sinnvoll, da hier ein LSTM-, also ein Zeitreihen-Modell verwendet wird. Die Zeit spielt eine wichtige Rolle, um Besonderheiten an beispielsweise dem ersten Tag eines Monats erkennen zu können. Außerdem werden die Daten nicht gemischt, da sonst der zeitliche Verlauf verloren geht.
 
 
 ```python
@@ -700,78 +723,78 @@ df
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-03-10</th>
-      <td>1799.166260</td>
-      <td>1692.504111</td>
-      <td>2.072288</td>
-      <td>24.420770</td>
-      <td>23.041894</td>
-      <td>58.146896</td>
-      <td>-45.0</td>
-      <td>1659.001465</td>
-      <td>10</td>
-      <td>2</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>2021-03-11</th>
-      <td>1826.194946</td>
-      <td>1705.769443</td>
-      <td>2.474617</td>
-      <td>25.084146</td>
-      <td>28.559460</td>
-      <td>59.362095</td>
-      <td>-35.0</td>
-      <td>1652.302972</td>
-      <td>11</td>
+      <th>2021-03-18</th>
+      <td>1782.855103</td>
+      <td>1761.543935</td>
+      <td>2.328687</td>
+      <td>7.742207</td>
+      <td>31.876547</td>
+      <td>53.455526</td>
+      <td>65.0</td>
+      <td>1702.337250</td>
+      <td>18</td>
       <td>3</td>
       <td>3</td>
     </tr>
     <tr>
-      <th>2021-03-12</th>
-      <td>1772.102417</td>
-      <td>1713.443946</td>
-      <td>2.453372</td>
-      <td>25.144150</td>
-      <td>29.194818</td>
-      <td>55.866143</td>
-      <td>-35.0</td>
-      <td>1644.931390</td>
-      <td>12</td>
+      <th>2021-03-19</th>
+      <td>1817.624146</td>
+      <td>1762.357783</td>
+      <td>2.215996</td>
+      <td>5.482409</td>
+      <td>30.751872</td>
+      <td>55.385288</td>
+      <td>65.0</td>
+      <td>1720.219800</td>
+      <td>19</td>
       <td>4</td>
       <td>3</td>
     </tr>
     <tr>
-      <th>2021-03-13</th>
-      <td>1924.685425</td>
-      <td>1742.903197</td>
-      <td>3.142964</td>
-      <td>23.006073</td>
-      <td>38.196060</td>
-      <td>62.563520</td>
-      <td>65.0</td>
-      <td>1644.385608</td>
-      <td>13</td>
+      <th>2021-03-20</th>
+      <td>1812.634644</td>
+      <td>1762.691364</td>
+      <td>2.069688</td>
+      <td>-1.204171</td>
+      <td>29.147856</td>
+      <td>55.032669</td>
+      <td>55.0</td>
+      <td>1740.049084</td>
+      <td>20</td>
       <td>5</td>
       <td>3</td>
     </tr>
     <tr>
-      <th>2021-03-15</th>
-      <td>1786.612183</td>
-      <td>1745.688563</td>
-      <td>2.914377</td>
-      <td>19.697286</td>
-      <td>36.435266</td>
-      <td>54.503352</td>
-      <td>65.0</td>
-      <td>1644.616571</td>
-      <td>15</td>
+      <th>2021-03-21</th>
+      <td>1788.217041</td>
+      <td>1763.014660</td>
+      <td>1.808119</td>
+      <td>-4.273539</td>
+      <td>26.061729</td>
+      <td>53.246063</td>
+      <td>55.0</td>
+      <td>1751.224554</td>
+      <td>21</td>
+      <td>6</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2021-03-22</th>
+      <td>1781.722412</td>
+      <td>1763.128572</td>
+      <td>1.552058</td>
+      <td>-0.969552</td>
+      <td>22.936596</td>
+      <td>52.755481</td>
+      <td>40.0</td>
+      <td>1765.680237</td>
+      <td>22</td>
       <td>0</td>
       <td>3</td>
     </tr>
   </tbody>
 </table>
-<p>2024 rows × 11 columns</p>
+<p>2032 rows × 11 columns</p>
 </div>
 
 
@@ -793,11 +816,13 @@ plt.show()
 ```
 
 
+    
 ![png](output_55_0.png)
+    
 
 
-### Aufteilung in features und labels
-Die Daten werden features und labels aufgeteilt. In diesem Fall sind die Spalten, welche in `X_columns` definiert sind, die features und der Preis das label. 
+### Aufteilung in Features und Labels
+Die Daten werden in Features und Labels aufgeteilt. In diesem Fall sind die Spalten, welche in `X_columns` definiert sind, die Features und der Preis das Label. 
 
 
 ```python
@@ -811,9 +836,9 @@ print(X_data.shape)
 print(y_data.shape)
 ```
 
-    (2024, 11)
-    (2024, 1)
-
+    (2032, 11)
+    (2032, 1)
+    
 
 ### Transformation der Daten
 Für die Transformation der Daten wird der MinMaxScaler verwendet. Dieser skaliert die Daten in einen vorgegebenen Bereich und macht die Daten damit praktikabel. In diesem Fall werden alle Daten in einem Bereich zwischen 0 und 1 skaliert.
@@ -887,7 +912,7 @@ X_scaled_data
       <td>0.000470</td>
       <td>0.087378</td>
       <td>0.076386</td>
-      <td>0.333396</td>
+      <td>0.333897</td>
       <td>0.257724</td>
       <td>0.447368</td>
       <td>0.000432</td>
@@ -901,7 +926,7 @@ X_scaled_data
       <td>0.000469</td>
       <td>0.089021</td>
       <td>0.097446</td>
-      <td>0.333423</td>
+      <td>0.333924</td>
       <td>0.254459</td>
       <td>0.631579</td>
       <td>0.000387</td>
@@ -915,7 +940,7 @@ X_scaled_data
       <td>0.000466</td>
       <td>0.101965</td>
       <td>0.135497</td>
-      <td>0.333472</td>
+      <td>0.333973</td>
       <td>0.276440</td>
       <td>0.631579</td>
       <td>0.000399</td>
@@ -929,7 +954,7 @@ X_scaled_data
       <td>0.000464</td>
       <td>0.114915</td>
       <td>0.239393</td>
-      <td>0.333520</td>
+      <td>0.334021</td>
       <td>0.273698</td>
       <td>0.605263</td>
       <td>0.000412</td>
@@ -943,7 +968,7 @@ X_scaled_data
       <td>0.000462</td>
       <td>0.152030</td>
       <td>0.347686</td>
-      <td>0.333617</td>
+      <td>0.334117</td>
       <td>0.344430</td>
       <td>0.578947</td>
       <td>0.000430</td>
@@ -966,78 +991,78 @@ X_scaled_data
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-03-10</th>
-      <td>0.917847</td>
-      <td>0.948974</td>
-      <td>0.462152</td>
-      <td>0.362016</td>
-      <td>0.470348</td>
-      <td>0.545849</td>
-      <td>0.263158</td>
-      <td>0.928977</td>
-      <td>0.300000</td>
-      <td>0.333333</td>
-      <td>0.181818</td>
-    </tr>
-    <tr>
-      <th>2021-03-11</th>
-      <td>0.931639</td>
-      <td>0.956415</td>
-      <td>0.471869</td>
-      <td>0.365124</td>
-      <td>0.502906</td>
-      <td>0.561474</td>
-      <td>0.315789</td>
-      <td>0.925225</td>
-      <td>0.333333</td>
+      <th>2021-03-18</th>
+      <td>0.909523</td>
+      <td>0.987697</td>
+      <td>0.468344</td>
+      <td>0.283868</td>
+      <td>0.522839</td>
+      <td>0.485531</td>
+      <td>0.842105</td>
+      <td>0.953252</td>
+      <td>0.566667</td>
       <td>0.500000</td>
       <td>0.181818</td>
     </tr>
     <tr>
-      <th>2021-03-12</th>
-      <td>0.904037</td>
-      <td>0.960719</td>
-      <td>0.471356</td>
-      <td>0.365405</td>
-      <td>0.506655</td>
-      <td>0.516525</td>
-      <td>0.315789</td>
-      <td>0.921095</td>
-      <td>0.366667</td>
+      <th>2021-03-19</th>
+      <td>0.927265</td>
+      <td>0.988154</td>
+      <td>0.465623</td>
+      <td>0.273279</td>
+      <td>0.516207</td>
+      <td>0.510342</td>
+      <td>0.842105</td>
+      <td>0.963268</td>
+      <td>0.600000</td>
       <td>0.666667</td>
       <td>0.181818</td>
     </tr>
     <tr>
-      <th>2021-03-13</th>
-      <td>0.981896</td>
-      <td>0.977242</td>
-      <td>0.488010</td>
-      <td>0.355387</td>
-      <td>0.559771</td>
-      <td>0.602635</td>
-      <td>0.842105</td>
-      <td>0.920790</td>
-      <td>0.400000</td>
+      <th>2021-03-20</th>
+      <td>0.924719</td>
+      <td>0.988341</td>
+      <td>0.462089</td>
+      <td>0.241949</td>
+      <td>0.506749</td>
+      <td>0.505809</td>
+      <td>0.789474</td>
+      <td>0.974376</td>
+      <td>0.633333</td>
       <td>0.833333</td>
       <td>0.181818</td>
     </tr>
     <tr>
-      <th>2021-03-15</th>
-      <td>0.911441</td>
-      <td>0.978805</td>
-      <td>0.482490</td>
-      <td>0.339884</td>
-      <td>0.549381</td>
-      <td>0.499003</td>
-      <td>0.842105</td>
-      <td>0.920919</td>
-      <td>0.466667</td>
+      <th>2021-03-21</th>
+      <td>0.912259</td>
+      <td>0.988522</td>
+      <td>0.455772</td>
+      <td>0.227568</td>
+      <td>0.488552</td>
+      <td>0.482838</td>
+      <td>0.789474</td>
+      <td>0.980636</td>
+      <td>0.666667</td>
+      <td>1.000000</td>
+      <td>0.181818</td>
+    </tr>
+    <tr>
+      <th>2021-03-22</th>
+      <td>0.908945</td>
+      <td>0.988586</td>
+      <td>0.449587</td>
+      <td>0.243049</td>
+      <td>0.470125</td>
+      <td>0.476530</td>
+      <td>0.710526</td>
+      <td>0.988733</td>
+      <td>0.700000</td>
       <td>0.000000</td>
       <td>0.181818</td>
     </tr>
   </tbody>
 </table>
-<p>2024 rows × 11 columns</p>
+<p>2032 rows × 11 columns</p>
 </div>
 
 
@@ -1078,10 +1103,11 @@ y_train_random = np.array(y_train_random)
 X_test_random = np.array(X_test_random)
 X_test_random = np.reshape(X_test_random, (X_test_random.shape[0], X_test_random.shape[1], X_test_random.shape[2]))
 y_test_random = np.array(y_test_random)
+
 ```
 
 Die gesammelten Daten müssen im nächsten Schritt in Traings- und Testdaten aufgeteilt werden. Dafür wurde die Aufteilung von 90% zu 10% gewählt (90% Traningsdaten und 10% Testdaten).
-Beide Datensätze haben immernoch die gleiche Anzahl an Spalten, jedoch sie die Zeilen aufgeteilt worden.
+Beide Datensätze haben immernoch die gleiche Anzahl an Spalten, die Zeilen wurden entsprechend der genannten Aufteilung gesplittet.
 
 
 ```python
@@ -1097,15 +1123,40 @@ y_train = np.array(y_train)
 X_test = np.array(X_test)
 X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], X_test.shape[2]))
 y_test = np.array(y_test)
+
+X_train_random.shape
 ```
 
-### Modell
+
+
+
+    (1800, 31, 11)
+
+
+
+@michael
+
+### Modell erstellen
+Bei diesem Anwendungsbeispiel ist das Ziel den Kursverlauf anhand von Indikatoren und Preisen aus der Vergangenheit für die Zukunft vorherzusagen. Im Detail werden 11 Kennzahlen für jeden der letzten 30 Tage verwendet, um den Preis für morgen vorherzusagen.
+
+Damit das Ziel erreicht werden kann, wird ein LSTM(long short-term memory)-Modell verwendet. Dieses Modell ist eine Erweiterung zu dem RNN(recurrent neural network)-Modell. Das LSTM-Modell im spezielle ist dafür ausgelegt in Zeitreihen oder anderen zusammenhängenden Datensätzen bestimmte Sequenzen zu erkennen. Neugewonnene Informationen können dabei gespeichert werden, um bei zukünftigen Zeitreihen angewandt zu werden. Außerdem kann ein LSTM-Modell entscheiden, ob eine Zeitreihe wichtige Informationen enthält oder nicht und diese dann entweder vergessen oder aktualisieren.
+Für das LSTM-Modell werden folgende Parameter definiert: 
+
+* `units = 15` (passende Anzahl für die Menge an Daten; bei höherer Anzahl --> Overfitting)
+* `return_sequences = False` (Nur eine LSTM-layer --> False)
+* `input_shape = 31, 11` (Diese Zahlen spiegel die Form der Inputdaten wider; 31: batch_size; 11: Anzahl der Indikatoren) 
+
+Anschließend wird für Dropout bestimmt wie viel Prozent der Neuronen pro Durchlauf "ausgeschaltet" sind, um die Gefahr von Overfitting zu vermeiden.
+
+Der letzte Bestandtteilt ist die Dense Layer. Dort wird das Outputformat definiert. Die Anzahl an `units` entspricht in diesem Beispiel 1, da nur der Preis für morgen verhergesagt werden soll. Sollten beispielsweise die Preise für die nächsten 3 Tage vorhergesatz werden, müsste die Dense-layser mit 3 definiert werden.  
+
+In der `model.summary` können nochmal die Daten überprüft werden.
 
 
 ```python
 model = tf.keras.Sequential()
 
-model.add(layers.LSTM(units = 15, return_sequences = False, input_shape = (X_train.shape[1], X_train.shape[2])))
+model.add(layers.LSTM(units = 15, return_sequences = False, input_shape = (X_train_random.shape[1], X_train_random.shape[2])))
 model.add(layers.Dropout(0.2))
 model.add(layers.Dense(units = 1))
 
@@ -1126,7 +1177,10 @@ model.summary()
     Trainable params: 1,636
     Non-trainable params: 0
     _________________________________________________________________
+    
 
+### Modell trainieren
+Für das Modell wird zum einen der `adam`-Optimierer und zum anderen die `mean_squared_error` loss-Funktion genutzt.
 
 
 ```python
@@ -1142,68 +1196,68 @@ history = model.fit(
 ```
 
     Epoch 1/30
-    51/51 [==============================] - 4s 29ms/step - loss: 0.0479 - val_loss: 0.0065
+    51/51 [==============================] - 2s 16ms/step - loss: 0.0321 - val_loss: 0.0022
     Epoch 2/30
-    51/51 [==============================] - 1s 18ms/step - loss: 0.0116 - val_loss: 0.0029
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0079 - val_loss: 0.0015
     Epoch 3/30
-    51/51 [==============================] - 1s 16ms/step - loss: 0.0066 - val_loss: 0.0019
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0048 - val_loss: 0.0012
     Epoch 4/30
-    51/51 [==============================] - 1s 13ms/step - loss: 0.0052 - val_loss: 0.0017
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0043 - val_loss: 0.0011
     Epoch 5/30
-    51/51 [==============================] - 1s 13ms/step - loss: 0.0053 - val_loss: 0.0013
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0042 - val_loss: 9.4342e-04
     Epoch 6/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0039 - val_loss: 0.0011
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0031 - val_loss: 8.3985e-04
     Epoch 7/30
-    51/51 [==============================] - 1s 17ms/step - loss: 0.0034 - val_loss: 0.0011
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0028 - val_loss: 7.6705e-04
     Epoch 8/30
-    51/51 [==============================] - 1s 18ms/step - loss: 0.0035 - val_loss: 0.0011
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0024 - val_loss: 7.2804e-04
     Epoch 9/30
-    51/51 [==============================] - 1s 18ms/step - loss: 0.0032 - val_loss: 0.0011
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0025 - val_loss: 9.0766e-04
     Epoch 10/30
-    51/51 [==============================] - 1s 15ms/step - loss: 0.0030 - val_loss: 9.6267e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0022 - val_loss: 5.8145e-04
     Epoch 11/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0027 - val_loss: 9.2280e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0024 - val_loss: 6.1137e-04
     Epoch 12/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0024 - val_loss: 9.2084e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0024 - val_loss: 5.3011e-04
     Epoch 13/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0027 - val_loss: 0.0010
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0018 - val_loss: 5.3402e-04
     Epoch 14/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0021 - val_loss: 8.5530e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0016 - val_loss: 5.1521e-04
     Epoch 15/30
-    51/51 [==============================] - 1s 16ms/step - loss: 0.0023 - val_loss: 0.0011
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 5.9149e-04
     Epoch 16/30
-    51/51 [==============================] - 1s 15ms/step - loss: 0.0023 - val_loss: 7.2322e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0020 - val_loss: 5.1259e-04
     Epoch 17/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0018 - val_loss: 9.8265e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 4.7698e-04
     Epoch 18/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0021 - val_loss: 8.7447e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0016 - val_loss: 4.9428e-04
     Epoch 19/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0022 - val_loss: 8.1718e-04
+    51/51 [==============================] - 1s 10ms/step - loss: 0.0017 - val_loss: 5.7487e-04
     Epoch 20/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0020 - val_loss: 8.9086e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0020 - val_loss: 4.8435e-04
     Epoch 21/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0016 - val_loss: 9.2661e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0016 - val_loss: 5.6698e-04
     Epoch 22/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0016 - val_loss: 8.5111e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0016 - val_loss: 4.5898e-04
     Epoch 23/30
-    51/51 [==============================] - 1s 15ms/step - loss: 0.0020 - val_loss: 8.1129e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0014 - val_loss: 4.3647e-04
     Epoch 24/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0018 - val_loss: 9.7867e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0015 - val_loss: 4.4453e-04
     Epoch 25/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0018 - val_loss: 6.7796e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0017 - val_loss: 4.1875e-04
     Epoch 26/30
-    51/51 [==============================] - 1s 16ms/step - loss: 0.0021 - val_loss: 8.3501e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 4.5498e-04
     Epoch 27/30
-    51/51 [==============================] - 1s 19ms/step - loss: 0.0015 - val_loss: 8.0147e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 4.5772e-04
     Epoch 28/30
-    51/51 [==============================] - 1s 16ms/step - loss: 0.0013 - val_loss: 6.8053e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 3.9038e-04
     Epoch 29/30
-    51/51 [==============================] - 1s 15ms/step - loss: 0.0017 - val_loss: 9.1013e-04
+    51/51 [==============================] - 0s 8ms/step - loss: 0.0013 - val_loss: 4.8555e-04
     Epoch 30/30
-    51/51 [==============================] - 1s 14ms/step - loss: 0.0013 - val_loss: 8.4829e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0014 - val_loss: 4.3776e-04
+    
 
-
-Die loss-Rate sollte bei einem Modell im so gering wie nur möglich sein. In dem folgendem Diagramm ist gut zu sehen, dass die loss-Rate in den ersten Epochen noch relativ hoch war und sich dann immer mehr einer Zahl nahe 0,03 angegelichen hat. Die Rate wurde dann auch ziemlich konstant über die restlichen Epochen gehalten. 
+Die loss-Rate sollte bei einem Modell immer so gering wie nur möglich sein. In dem folgendem Diagramm ist gut zu sehen, dass die loss-Rate in den ersten Epochen noch relativ hoch war und sich dann immer mehr einer Zahl nahe 0,0015 angegelichen hat. Die Rate wurde dann auch ziemlich konstant über die restlichen Epochen gehalten. 
 
 
 ```python
@@ -1236,11 +1290,13 @@ plt.show()
 ```
 
 
-![png](output_71_0.png)
+    
+![png](output_72_0.png)
+    
 
 
-### Test des Modells
-Nachdem das Modell nun trainiert ist, kann mit den Testdaten überprüft werden, wie gut das Modell funktioniert. In dem Diagramm sind 3 Linien eingezeichnet. Die grüne Linie sind die historischen Daten, also die Daten mit dem das Modell trainiert wurde. Die anderen beiden Linien spiegeln den Test wider. Dabei bildet die blaue Linie den tatsächlichen Preisverlauf während der Testphase ab und die rote Linie den vom Modell bestimmten Preisverlauf während der Testphase. 
+### Überprüfung des Modells
+Nachdem das Modell nun trainiert ist, kann zunächst überprüft werden, wie das Modell mit den Trainingsdaten performed. In dem ersten Diagramm sind alle Trainingsdaten abgebildet. Im zweiten Diagramm sind die Vorhersagen des ersten Jahres und im letzten Diagramm die Vorhersagen des letzten Jahres eingezeichnet. Dort ist gut zu erkennen, dass im ersten Jahr die Vorhersage noch sehr ungenau ist und große Schwankungen enhält. Im Gegensatz dazu ist die Vorhersage im letzten Jahr ziemliche nahe am tatsächlichen Kurs.
 
 
 ```python
@@ -1260,7 +1316,9 @@ plt.show();
 ```
 
 
-![png](output_74_0.png)
+    
+![png](output_75_0.png)
+    
 
 
 
@@ -1274,10 +1332,13 @@ plt.show();
 ```
 
 
-![png](output_75_0.png)
+    
+![png](output_76_0.png)
+    
 
 
-Hier sind nochmal die gleichen Zahlen zu sehen, wie in dem Diagramm oben. Es wurden nur die Trainingsdaten weggelassen, um den detailierten Verlauf der beiden anderen Linien zu sehen. 
+### Test des Modells
+Nachdem das Modell nun trainiert ist, kann mit den Testdaten überprüft werden, wie gut das Modell funktioniert. Das Diagramm zeigt dabei in blau den tatsächlichen Preisverlauf während der Testphase ab und in rot den vom Modell vorhergesagten Preisverlauf während der Testphase.
 
 
 ```python
@@ -1296,8 +1357,12 @@ plt.show();
 ```
 
 
-![png](output_77_0.png)
+    
+![png](output_78_0.png)
+    
 
+
+@aaron
 
 ## 3. Auführung
 
@@ -1358,8 +1423,8 @@ for tweet in tweets:
     create_dates.append(epoch_time)
 ```
 
-    {'id': '1371408447225225222', 'public_metrics': {'retweet_count': 0, 'reply_count': 0, 'like_count': 0, 'quote_count': 0}, 'text': 'India to propose cryptocurrency ban, penalising miners, traders: Report #IndiaCryptoBan #CryptocurrencyBan #Compliance #FinanceMinistry #India #Bitcoin #Panic #Miners  https://t.co/ZhgVCjS8Y7', 'created_at': '2021-03-15T10:30:28.000Z'}
-
+    {'text': '“We operate under the ether of a sinister &amp; paralyzing mythology, suffer from massive failure of imagination. The humanitarian sector is nowhere near the size of its true potential”. Lack of imagination &amp; scoffing at anything faith based is part of problem https://t.co/mV5bqHt1wN', 'public_metrics': {'retweet_count': 2, 'reply_count': 2, 'like_count': 7, 'quote_count': 0}, 'created_at': '2021-03-22T04:45:34.000Z', 'id': '1373858367505014789'}
+    
 
 Hier übergeben wir unseren Sentimentmodel den Batch an gefetchten Tweets. Dannach formatieren wir noch das Sentiment, sodass es von -1 bis 1 geht. Somit kann man besser unterscheiden, ob Tweets negativ oder positiv gemeint sind.
 
@@ -1379,18 +1444,13 @@ for i in range(5):
     print("{} - {} - {}".format(d,t,p))
 ```
 
-    1615804228.0 - India to propose cryptocurrency ban, penalising miners, traders: Report #IndiaCryptoBan #CryptocurrencyBan #Compliance #FinanceMinistry #India #Bitcoin #Panic #Miners  https://t.co/ZhgVCjS8Y7 - 0.2757258415222168
-    1615804406.0 - The deal would see FTX become the first crypto exchange to sponsor a major professional sports venue in the US.
+    1616388334.0 - “We operate under the ether of a sinister &amp; paralyzing mythology, suffer from massive failure of imagination. The humanitarian sector is nowhere near the size of its true potential”. Lack of imagination &amp; scoffing at anything faith based is part of problem https://t.co/mV5bqHt1wN - -0.5548605918884277
+    1616389213.0 - Really enjoyed my interview with @SanketD_ET of @etwealth, where I have tried to explain about the economic recovery outlook, inflation risks, #market insights, #SPAC and #cryptocurrency etc.
+    #IIFLSecurities #India https://t.co/B3EQO3DhHa - 0.038269996643066406
+    1616389569.0 - They're selling a set of my four @MyCurioCards from 2017 at 25 ETH. I am feeling genuine FOMO over not owning any of my own work. https://t.co/rYFkrsZktm - -0.8507745862007141
+    1616390020.0 - @ETNOWlive Our upcoming episode features @TimDraper talking about #decentralized #globalcurrency #Crypto @Bitcoin #Bitcoin #ethereum #indianeedscrypto #regulation @CoinSwitchKuber @AnoushBhasin @ThatNaimish @ianuragthakur @HeroCitySpace @Fintechtv1 https://t.co/lIdzcXjEFL - 0.5515286922454834
+    1616390028.0 - "The indictment alleges that the defendants knowingly operated the crypto exchange business in violation of federal anti-money laundering laws and regulations." https://t.co/kMgCkRpQNp - 0.5623154640197754
     
-    The company would replace American Airlines, whose 20-year, US$2.1m per season contract expired in 2019 #NBA #SportsBiz https://t.co/dp0fRovMsz - 0.3065521717071533
-    1615804541.0 - India to propose cryptocurrency ban https://t.co/6f8TrGPmnY - 0.02441096305847168
-    1615804678.0 - India to propose cryptocurrency ban, penalising miners, traders - source - 0.38356590270996094
-    1615804822.0 - Oil prices ended lower on Friday, a day after hitting their highest close in around two years.
-    Bitcoin will be in focus today, after the cryptocurrency climbed past the $61,000 mark for the first time.
-    https://t.co/Ep1r3aCQwb
-    
-    #finance #investment #trade #stockmarket #commodities https://t.co/zVI9PrVBWU - 0.388644814491272
-
 
 Da wir den aktuellen Sentimenttrend bestimmen wollen implementieren wir eine Simple Moving Average
 
@@ -1432,7 +1492,9 @@ plt.show()
 ```
 
 
-![png](output_92_0.png)
+    
+![png](output_93_0.png)
+    
 
 
 Wir wollen aber zusätzlich noch den Einfluss der Tweets miteinberechnen. Dafür gewichten wir die Tweets mithilfe der Anzahl der Likes. Dafür mulitplizieren wir die Anzahl der Likes mit dem Sentiment Wert (+1 da sonst alle Tweets mit 0 Likes eliminiert werden). Mit den Sigmoid Funktion squashen wir alle Werte zurück in unseren vorherigen Wertebereich.
@@ -1445,8 +1507,12 @@ def normalized_sigmoid(x):
   return ((1 / (1 + math.exp(-x))) - 0.5) * 2
 
 for i in range(len(sentiment)):
-    weight = tweets[i]['public_metrics']['like_count'] + 1
-    weighted_sentiment.append(normalized_sigmoid(weight * sentiment[i]))
+    if 'public_metrics' not in tweets[i]:
+        weight = 1
+        weighted_sentiment.append(sentiment[i])
+    else:
+        weight = tweets[i]['public_metrics']['like_count'] + 1
+        weighted_sentiment.append(normalized_sigmoid(weight * sentiment[i]))
 
 ```
 
@@ -1481,7 +1547,9 @@ plt.show()
 ```
 
 
-![png](output_96_0.png)
+    
+![png](output_97_0.png)
+    
 
 
 Letztendlich können wir die beiden Werte noch vergleichen, um zu überprüfen, ob die Gewichtung tatsächlich einen Einfluss auf den Stimmungstrend hat
@@ -1509,14 +1577,16 @@ plt.show()
 ```
 
 
-![png](output_98_0.png)
+    
+![png](output_99_0.png)
+    
 
 
 Die folgende Funktion dient zur Datenaufbereitung für die Vorhersage des Kursverlaufes 30 Tage in die Zukunft.
 
 
 ```python
-def create_data(df):
+def create_data(df, X_scaler_predict, y_scaler_predict):
     kama_indicator = KAMAIndicator(close = df["price"], window = 10, pow1 = 2, pow2 = 30, fillna = False)
     df['kama'] = kama_indicator.kama()
     ppo_indicator = PercentagePriceOscillator(close = df["price"], window_slow = 20, window_fast = 10, window_sign = 9, fillna = False)
@@ -1554,8 +1624,8 @@ def create_data(df):
     X_predict = predict.filter(X_columns)
     y_predict = predict.filter(['price'])
 
-    X_scaled_predict = X_scaler.fit_transform(X_predict)
-    y_scaled_predict = y_scaler.fit_transform(y_predict)
+    X_scaled_predict = X_scaler_predict.fit_transform(X_predict)
+    y_scaled_predict = y_scaler_predict.fit_transform(y_predict)
 
     X_scaled_predict = pd.DataFrame(data=X_scaled_predict, index=predict.index, columns=X_columns)
     y_scaled_predict = pd.DataFrame(data=y_scaled_predict, index=predict.index, columns=['price'])
@@ -1577,14 +1647,17 @@ df =  df.drop(df.columns[[0, 1, 2, 4, 5]], axis=1)
 df.rename(columns = {"Close": "price"}, inplace=True)
 prices = df['price'].to_numpy()
 
+X_scaler_predict = MinMaxScaler(feature_range = (0, 1))
+y_scaler_predict = MinMaxScaler(feature_range = (0, 1))
+
 days_in_future = 30
 y_predicted_all = []
 
 for i in range(days_in_future):
-    df, X_scaled_predict, y_scaled_predict = create_data(df)
+    df, X_scaled_predict, y_scaled_predict = create_data(df, X_scaler_predict, y_scaler_predict)
     X = np.array([X_scaled_predict.values])
     y_predicted = model.predict(X)
-    y_predicted_inv = y_scaler.inverse_transform(y_predicted)
+    y_predicted_inv = y_scaler_predict.inverse_transform(y_predicted)
     y_predicted_all.append(y_predicted_inv[0][0])
     del X_scaled_predict
     del y_scaled_predict
@@ -1599,8 +1672,8 @@ for i in range(days_in_future):
 print(y_predicted_all)
 ```
 
-    [1714.9178, 1709.27, 1703.6643, 1701.051, 1695.5026, 1693.5403, 1700.1417, 1706.0363, 1704.8845, 1709.0952, 1713.0094, 1731.9855, 1739.0729, 1751.5328, 1759.3268, 1766.6241, 1767.8647, 1777.3938, 1777.3239, 1787.0933, 1794.9642, 1801.6578, 1830.661, 1841.1426, 1842.6377, 1844.8789, 1848.3894, 1851.8295, 1855.1996, 1857.8586]
-
+    [1723.8058, 1713.8246, 1705.2152, 1696.3575, 1680.9337, 1670.4683, 1669.3579, 1669.7205, 1665.5104, 1663.6744, 1661.0651, 1664.9491, 1666.4053, 1673.3661, 1678.3859, 1683.1365, 1694.4926, 1703.9674, 1706.0189, 1719.1744, 1723.9122, 1736.337, 1771.7825, 1790.2035, 1791.8595, 1795.5083, 1805.3932, 1814.0636, 1822.4109, 1830.3983]
+    
 
 
 ```python
@@ -1615,5 +1688,7 @@ plt.show()
 ```
 
 
-![png](output_103_0.png)
+    
+![png](output_104_0.png)
+    
 
