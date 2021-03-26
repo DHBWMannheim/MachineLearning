@@ -115,29 +115,29 @@ dataframe.head()
   </thead>
   <tbody>
     <tr>
-      <th>1583356</th>
+      <th>904961</th>
       <td>4</td>
-      <td>@shellrawlins no - I wasnt - I was reading the...</td>
+      <td>@hintswen oh.. Hope they will throw something ...</td>
     </tr>
     <tr>
-      <th>942980</th>
+      <th>1248968</th>
       <td>4</td>
-      <td>@demiguise Just make sure you're out of the st...</td>
+      <td>@fudosan  True. I'm going for both, but if I d...</td>
     </tr>
     <tr>
-      <th>1147242</th>
+      <th>1564544</th>
       <td>4</td>
-      <td>had alot of fun with my boyfriend, my brothers...</td>
+      <td>@cindylake Enrolled there but ended up going t...</td>
     </tr>
     <tr>
-      <th>270095</th>
+      <th>84534</th>
       <td>0</td>
-      <td>@GabriellaOlsson it really wont end... i hat t...</td>
+      <td>school sicks study sucks and so do tests  CANT...</td>
     </tr>
     <tr>
-      <th>1220421</th>
-      <td>4</td>
-      <td>Gooooood morning  Class, gym, studying, sleep..</td>
+      <th>526828</th>
+      <td>0</td>
+      <td>I hate it here it`s raining all day</td>
     </tr>
   </tbody>
 </table>
@@ -194,12 +194,12 @@ for text_batch, label_batch in raw_train_ds.take(1):
     print("Label:", label_batch.numpy()[i])
 ```
 
-    Tweet: b'My dadys workin today  but will see him soon, love you!'
-    Label: 0
-    Tweet: b'getting green with arnold '
+    Tweet: b"My boyfriend looks so freaking good today. I'm a lucky girl "
     Label: 4
-    Tweet: b'New Song of the Moment #Pens fans! Hear Kardaz - The Mighty Guins 2007 no new version tho  at http://www.wjfuoco.com or http://is.gd/JZh3'
-    Label: 0
+    Tweet: b'@rlbates You are an inspiration. Maybe I will go out in the rain as well. '
+    Label: 4
+    Tweet: b"Goodnight twitters's's's' hahaha ! Mkay we'll'p call or text, might go workout early tomorrow -____- I'm so fat its not funny. "
+    Label: 4
     
 
 @matthias
@@ -259,15 +259,15 @@ print(label)
 print(vectorize_text(text, label))
 ```
 
-    tf.Tensor(b'My dadys workin today  but will see him soon, love you!', shape=(), dtype=string)
-    tf.Tensor(0, shape=(), dtype=int64)
+    tf.Tensor(b"My boyfriend looks so freaking good today. I'm a lucky girl ", shape=(), dtype=string)
+    tf.Tensor(4, shape=(), dtype=int64)
     (<tf.Tensor: shape=(1, 56), dtype=int64, numpy=
-    array([[   6,    1, 1992,   78,   21,   48,   65,  172, 1636,   43,  288,
+    array([[   6, 1065,  240,   15, 1071,   29,  216,   19,    5,  634,  350,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-               0]], dtype=int64)>, 0)
+               0]], dtype=int64)>, 1)
     
 
 Mithilfe des Vektorlayers können wir von den Ids wieder auf die Wörtern zurückschließen. Außerdem können wir die Größe unseres Wörterbuchs auslesen.
@@ -278,7 +278,7 @@ print("1234 ---> ", vectorize_layer.get_vocabulary()[1234])
 print('Vocabulary size: {}'.format(len(vectorize_layer.get_vocabulary())))
 ```
 
-    1234 --->  11
+    1234 --->  terrible
     Vocabulary size: 10000
     
 
@@ -330,7 +330,7 @@ model = tf.keras.Sequential([
 model.summary()
 ```
 
-    Model: "sequential_1"
+    Model: "sequential"
     _________________________________________________________________
     Layer (type)                 Output Shape              Param #   
     =================================================================
@@ -338,9 +338,9 @@ model.summary()
     _________________________________________________________________
     global_average_pooling1d (Gl (None, 32)                0         
     _________________________________________________________________
-    dropout_1 (Dropout)          (None, 32)                0         
+    dropout (Dropout)            (None, 32)                0         
     _________________________________________________________________
-    dense_1 (Dense)              (None, 1)                 33        
+    dense (Dense)                (None, 1)                 33        
     =================================================================
     Total params: 320,065
     Trainable params: 320,065
@@ -371,25 +371,25 @@ history = model.fit(
 ```
 
     Epoch 1/10
-    3200/3200 [==============================] - 23s 7ms/step - loss: 0.6863 - binary_accuracy: 0.5994 - val_loss: 0.6518 - val_binary_accuracy: 0.6867
+    3200/3200 [==============================] - 13s 4ms/step - loss: 0.6869 - binary_accuracy: 0.5850 - val_loss: 0.6544 - val_binary_accuracy: 0.6893
     Epoch 2/10
-    3200/3200 [==============================] - 21s 7ms/step - loss: 0.6378 - binary_accuracy: 0.6976 - val_loss: 0.5995 - val_binary_accuracy: 0.7173
+    3200/3200 [==============================] - 10s 3ms/step - loss: 0.6404 - binary_accuracy: 0.6943 - val_loss: 0.6021 - val_binary_accuracy: 0.7168
     Epoch 3/10
-    3200/3200 [==============================] - 20s 6ms/step - loss: 0.5887 - binary_accuracy: 0.7252 - val_loss: 0.5611 - val_binary_accuracy: 0.7398
+    3200/3200 [==============================] - 10s 3ms/step - loss: 0.5910 - binary_accuracy: 0.7228 - val_loss: 0.5633 - val_binary_accuracy: 0.7387
     Epoch 4/10
-    3200/3200 [==============================] - 20s 6ms/step - loss: 0.5529 - binary_accuracy: 0.7461 - val_loss: 0.5336 - val_binary_accuracy: 0.7554
+    3200/3200 [==============================] - 10s 3ms/step - loss: 0.5547 - binary_accuracy: 0.7447 - val_loss: 0.5352 - val_binary_accuracy: 0.7542
     Epoch 5/10
-    3200/3200 [==============================] - 20s 6ms/step - loss: 0.5272 - binary_accuracy: 0.7605 - val_loss: 0.5145 - val_binary_accuracy: 0.7657
+    3200/3200 [==============================] - 10s 3ms/step - loss: 0.5286 - binary_accuracy: 0.7595 - val_loss: 0.5155 - val_binary_accuracy: 0.7647
     Epoch 6/10
-    3200/3200 [==============================] - 20s 6ms/step - loss: 0.5093 - binary_accuracy: 0.7695 - val_loss: 0.5015 - val_binary_accuracy: 0.7723
+    3200/3200 [==============================] - 10s 3ms/step - loss: 0.5104 - binary_accuracy: 0.7690 - val_loss: 0.5021 - val_binary_accuracy: 0.7713
     Epoch 7/10
-    3200/3200 [==============================] - 21s 6ms/step - loss: 0.4970 - binary_accuracy: 0.7756 - val_loss: 0.4928 - val_binary_accuracy: 0.7767
+    3200/3200 [==============================] - 10s 3ms/step - loss: 0.4979 - binary_accuracy: 0.7753 - val_loss: 0.4931 - val_binary_accuracy: 0.7759
     Epoch 8/10
-    3200/3200 [==============================] - 21s 7ms/step - loss: 0.4887 - binary_accuracy: 0.7797 - val_loss: 0.4868 - val_binary_accuracy: 0.7802
+    3200/3200 [==============================] - 13s 4ms/step - loss: 0.4893 - binary_accuracy: 0.7797 - val_loss: 0.4870 - val_binary_accuracy: 0.7793
     Epoch 9/10
-    3200/3200 [==============================] - 21s 6ms/step - loss: 0.4830 - binary_accuracy: 0.7829 - val_loss: 0.4826 - val_binary_accuracy: 0.7826
+    3200/3200 [==============================] - 15s 5ms/step - loss: 0.4835 - binary_accuracy: 0.7830 - val_loss: 0.4827 - val_binary_accuracy: 0.7817
     Epoch 10/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4787 - binary_accuracy: 0.7854 - val_loss: 0.4795 - val_binary_accuracy: 0.7844
+    3200/3200 [==============================] - 14s 4ms/step - loss: 0.4791 - binary_accuracy: 0.7855 - val_loss: 0.4795 - val_binary_accuracy: 0.7835
     
 
 Nachdem das Modell nur trainiert ist können wir es mit den vorher festgelegten Testdatensatz testen. Diese sollen wie bereits erwähnt echte Daten simulieren. Dabei erhalten wir mit `model.evaluate()` den Loss und die Accuracy, welche bei rund 80% liegt.
@@ -402,9 +402,9 @@ print("Loss: ", loss)
 print("Accuracy: ", accuracy)
 ```
 
-    1000/1000 [==============================] - 3s 3ms/step - loss: 0.4795 - binary_accuracy: 0.7839
-    Loss:  0.47949355840682983
-    Accuracy:  0.7839499711990356
+    1000/1000 [==============================] - 2s 2ms/step - loss: 0.4785 - binary_accuracy: 0.7847A: 1s - loss
+    Loss:  0.4785330593585968
+    Accuracy:  0.7847062349319458
     
 
 In dem History-Objekt können wir nun sehen, welche Daten Tensorflow für uns aufgezeichnet hat.
@@ -503,9 +503,9 @@ sentiment_model.predict(examples)
 
 
 
-    array([[0.85002184],
-           [0.5242844 ],
-           [0.42360997]], dtype=float32)
+    array([[0.8452177 ],
+           [0.516922  ],
+           [0.42318448]], dtype=float32)
 
 
 
@@ -524,10 +524,6 @@ Die Daten zum Trainieren des Modelles werden von Yahoo abgefragt. Bei diesen Dat
 import numpy as np
 import pandas_datareader.data as pdr
 
-from pylab import rcParams
-from matplotlib import rc
-from sklearn.model_selection import train_test_split
-from pandas.plotting import register_matplotlib_converters
 from sklearn.preprocessing import MinMaxScaler
 import random
 
@@ -562,7 +558,156 @@ start = datetime(2000, 9, 1)
 ETH = pdr.DataReader(symbol,'yahoo',start,end)
 
 df = pd.DataFrame(data=ETH)
+df
+```
 
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>High</th>
+      <th>Low</th>
+      <th>Open</th>
+      <th>Close</th>
+      <th>Volume</th>
+      <th>Adj Close</th>
+    </tr>
+    <tr>
+      <th>Date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2015-08-06</th>
+      <td>3.536610</td>
+      <td>2.521120</td>
+      <td>2.831620</td>
+      <td>2.772120</td>
+      <td>1.643290e+05</td>
+      <td>2.772120</td>
+    </tr>
+    <tr>
+      <th>2015-08-07</th>
+      <td>2.798810</td>
+      <td>0.714725</td>
+      <td>2.793760</td>
+      <td>0.753325</td>
+      <td>6.741880e+05</td>
+      <td>0.753325</td>
+    </tr>
+    <tr>
+      <th>2015-08-08</th>
+      <td>0.879810</td>
+      <td>0.629191</td>
+      <td>0.706136</td>
+      <td>0.701897</td>
+      <td>5.321700e+05</td>
+      <td>0.701897</td>
+    </tr>
+    <tr>
+      <th>2015-08-09</th>
+      <td>0.729854</td>
+      <td>0.636546</td>
+      <td>0.713989</td>
+      <td>0.708448</td>
+      <td>4.052830e+05</td>
+      <td>0.708448</td>
+    </tr>
+    <tr>
+      <th>2015-08-10</th>
+      <td>1.131410</td>
+      <td>0.663235</td>
+      <td>0.708087</td>
+      <td>1.067860</td>
+      <td>1.463100e+06</td>
+      <td>1.067860</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2021-03-22</th>
+      <td>1811.968262</td>
+      <td>1674.299805</td>
+      <td>1788.362183</td>
+      <td>1691.333984</td>
+      <td>2.359930e+10</td>
+      <td>1691.333984</td>
+    </tr>
+    <tr>
+      <th>2021-03-23</th>
+      <td>1725.108765</td>
+      <td>1662.539917</td>
+      <td>1690.871826</td>
+      <td>1678.650146</td>
+      <td>2.199824e+10</td>
+      <td>1678.650146</td>
+    </tr>
+    <tr>
+      <th>2021-03-24</th>
+      <td>1740.428223</td>
+      <td>1570.787964</td>
+      <td>1678.002563</td>
+      <td>1593.413452</td>
+      <td>3.122805e+10</td>
+      <td>1593.413452</td>
+    </tr>
+    <tr>
+      <th>2021-03-25</th>
+      <td>1625.911499</td>
+      <td>1560.370483</td>
+      <td>1593.123291</td>
+      <td>1595.359253</td>
+      <td>2.965033e+10</td>
+      <td>1595.359253</td>
+    </tr>
+    <tr>
+      <th>2021-03-26</th>
+      <td>1642.629517</td>
+      <td>1601.886963</td>
+      <td>1631.285767</td>
+      <td>1632.108032</td>
+      <td>2.338702e+10</td>
+      <td>1632.108032</td>
+    </tr>
+  </tbody>
+</table>
+<p>2055 rows × 6 columns</p>
+</div>
+
+
+
+
+```python
 kama_indicator = KAMAIndicator(close = df["Close"], window = 10, pow1 = 2, pow2 = 30, fillna = False)
 df['kama'] = kama_indicator.kama()
 ppo_indicator = PercentagePriceOscillator(close = df["Close"], window_slow = 20, window_fast = 10, window_sign = 9, fillna = False)
@@ -723,78 +868,78 @@ df
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-03-18</th>
-      <td>1782.855103</td>
-      <td>1761.543935</td>
-      <td>2.328687</td>
-      <td>7.742207</td>
-      <td>31.876547</td>
-      <td>53.455526</td>
-      <td>65.0</td>
-      <td>1702.337250</td>
-      <td>18</td>
-      <td>3</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>2021-03-19</th>
-      <td>1817.624146</td>
-      <td>1762.357783</td>
-      <td>2.215996</td>
-      <td>5.482409</td>
-      <td>30.751872</td>
-      <td>55.385288</td>
-      <td>65.0</td>
-      <td>1720.219800</td>
-      <td>19</td>
-      <td>4</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>2021-03-20</th>
-      <td>1812.634644</td>
-      <td>1762.691364</td>
-      <td>2.069688</td>
-      <td>-1.204171</td>
-      <td>29.147856</td>
-      <td>55.032669</td>
-      <td>55.0</td>
-      <td>1740.049084</td>
-      <td>20</td>
-      <td>5</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>2021-03-21</th>
-      <td>1788.217041</td>
-      <td>1763.014660</td>
-      <td>1.808119</td>
-      <td>-4.273539</td>
-      <td>26.061729</td>
-      <td>53.246063</td>
-      <td>55.0</td>
-      <td>1751.224554</td>
-      <td>21</td>
-      <td>6</td>
-      <td>3</td>
-    </tr>
-    <tr>
       <th>2021-03-22</th>
-      <td>1781.722412</td>
-      <td>1763.128572</td>
-      <td>1.552058</td>
-      <td>-0.969552</td>
-      <td>22.936596</td>
-      <td>52.755481</td>
+      <td>1691.333984</td>
+      <td>1761.219993</td>
+      <td>1.114866</td>
+      <td>-5.993458</td>
+      <td>17.639106</td>
+      <td>46.759592</td>
       <td>40.0</td>
-      <td>1765.680237</td>
+      <td>1761.160815</td>
       <td>22</td>
       <td>0</td>
       <td>3</td>
     </tr>
+    <tr>
+      <th>2021-03-23</th>
+      <td>1678.650146</td>
+      <td>1744.100088</td>
+      <td>0.516764</td>
+      <td>-8.079356</td>
+      <td>10.189193</td>
+      <td>45.970035</td>
+      <td>40.0</td>
+      <td>1766.300665</td>
+      <td>23</td>
+      <td>1</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2021-03-24</th>
+      <td>1593.413452</td>
+      <td>1711.735024</td>
+      <td>-0.362963</td>
+      <td>-10.083445</td>
+      <td>-0.659070</td>
+      <td>40.964188</td>
+      <td>40.0</td>
+      <td>1768.875623</td>
+      <td>24</td>
+      <td>2</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2021-03-25</th>
+      <td>1595.359253</td>
+      <td>1691.277535</td>
+      <td>-1.009349</td>
+      <td>-17.110649</td>
+      <td>-8.840453</td>
+      <td>41.121809</td>
+      <td>-55.0</td>
+      <td>1771.979834</td>
+      <td>25</td>
+      <td>3</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2021-03-26</th>
+      <td>1632.108032</td>
+      <td>1683.552312</td>
+      <td>-1.290126</td>
+      <td>-11.995070</td>
+      <td>-12.820552</td>
+      <td>44.154416</td>
+      <td>-55.0</td>
+      <td>1770.848157</td>
+      <td>26</td>
+      <td>4</td>
+      <td>3</td>
+    </tr>
   </tbody>
 </table>
-<p>2032 rows × 11 columns</p>
+<p>2036 rows × 11 columns</p>
 </div>
 
 
@@ -817,7 +962,7 @@ plt.show()
 
 
     
-![png](output_55_0.png)
+![png](output_56_0.png)
     
 
 
@@ -836,8 +981,8 @@ print(X_data.shape)
 print(y_data.shape)
 ```
 
-    (2032, 11)
-    (2032, 1)
+    (2034, 11)
+    (2034, 1)
     
 
 ### Transformation der Daten
@@ -991,34 +1136,6 @@ X_scaled_data
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-03-18</th>
-      <td>0.909523</td>
-      <td>0.987697</td>
-      <td>0.468344</td>
-      <td>0.283868</td>
-      <td>0.522839</td>
-      <td>0.485531</td>
-      <td>0.842105</td>
-      <td>0.953252</td>
-      <td>0.566667</td>
-      <td>0.500000</td>
-      <td>0.181818</td>
-    </tr>
-    <tr>
-      <th>2021-03-19</th>
-      <td>0.927265</td>
-      <td>0.988154</td>
-      <td>0.465623</td>
-      <td>0.273279</td>
-      <td>0.516207</td>
-      <td>0.510342</td>
-      <td>0.842105</td>
-      <td>0.963268</td>
-      <td>0.600000</td>
-      <td>0.666667</td>
-      <td>0.181818</td>
-    </tr>
-    <tr>
       <th>2021-03-20</th>
       <td>0.924719</td>
       <td>0.988341</td>
@@ -1048,21 +1165,49 @@ X_scaled_data
     </tr>
     <tr>
       <th>2021-03-22</th>
-      <td>0.908945</td>
-      <td>0.988586</td>
-      <td>0.449587</td>
-      <td>0.243049</td>
-      <td>0.470125</td>
-      <td>0.476530</td>
+      <td>0.862823</td>
+      <td>0.987516</td>
+      <td>0.439029</td>
+      <td>0.219509</td>
+      <td>0.438888</td>
+      <td>0.399439</td>
       <td>0.710526</td>
-      <td>0.988733</td>
+      <td>0.986202</td>
       <td>0.700000</td>
       <td>0.000000</td>
       <td>0.181818</td>
     </tr>
+    <tr>
+      <th>2021-03-23</th>
+      <td>0.856350</td>
+      <td>0.977914</td>
+      <td>0.424583</td>
+      <td>0.209735</td>
+      <td>0.394960</td>
+      <td>0.389287</td>
+      <td>0.710526</td>
+      <td>0.989081</td>
+      <td>0.733333</td>
+      <td>0.166667</td>
+      <td>0.181818</td>
+    </tr>
+    <tr>
+      <th>2021-03-24</th>
+      <td>0.881022</td>
+      <td>0.977164</td>
+      <td>0.419368</td>
+      <td>0.235666</td>
+      <td>0.377158</td>
+      <td>0.434319</td>
+      <td>0.710526</td>
+      <td>0.994265</td>
+      <td>0.766667</td>
+      <td>0.333333</td>
+      <td>0.181818</td>
+    </tr>
   </tbody>
 </table>
-<p>2032 rows × 11 columns</p>
+<p>2034 rows × 11 columns</p>
 </div>
 
 
@@ -1089,6 +1234,8 @@ random.shuffle(mixed)
 X_random_batches, y_random_batches = zip(*mixed)
 ```
 
+Die gesammelten Daten müssen im nächsten Schritt in Traings- und Testdaten aufgeteilt werden. Dafür wurde die Aufteilung von 90% zu 10% gewählt (90% Traningsdaten und 10% Testdaten). Beide Datensätze haben immernoch die gleiche Anzahl an Spalten, die Zeilen wurden entsprechend der genannten Aufteilung gesplittet.
+
 
 ```python
 train_size = int(len(X_scaled_batches) * 0.9)
@@ -1106,13 +1253,8 @@ y_test_random = np.array(y_test_random)
 
 ```
 
-Die gesammelten Daten müssen im nächsten Schritt in Traings- und Testdaten aufgeteilt werden. Dafür wurde die Aufteilung von 90% zu 10% gewählt (90% Traningsdaten und 10% Testdaten).
-Beide Datensätze haben immernoch die gleiche Anzahl an Spalten, die Zeilen wurden entsprechend der genannten Aufteilung gesplittet.
-
 
 ```python
-train_size = int(len(X_scaled_batches) * 0.9)
-test_size = len(X_scaled_batches) - train_size
 X_train, X_test = X_scaled_batches[0:train_size], X_scaled_batches[train_size:len(X_scaled_batches)]
 y_train, y_test = y_scaled_batches[0:train_size], y_scaled_batches[train_size:len(y_scaled_batches)]
 
@@ -1130,7 +1272,7 @@ X_train_random.shape
 
 
 
-    (1800, 31, 11)
+    (1801, 31, 11)
 
 
 
@@ -1163,15 +1305,15 @@ model.add(layers.Dense(units = 1))
 model.summary()
 ```
 
-    Model: "sequential_3"
+    Model: "sequential_2"
     _________________________________________________________________
     Layer (type)                 Output Shape              Param #   
     =================================================================
-    lstm_1 (LSTM)                (None, 15)                1620      
+    lstm (LSTM)                  (None, 15)                1620      
     _________________________________________________________________
-    dropout_2 (Dropout)          (None, 15)                0         
+    dropout_1 (Dropout)          (None, 15)                0         
     _________________________________________________________________
-    dense_2 (Dense)              (None, 1)                 16        
+    dense_1 (Dense)              (None, 1)                 16        
     =================================================================
     Total params: 1,636
     Trainable params: 1,636
@@ -1182,6 +1324,10 @@ model.summary()
 ### Modell trainieren
 Für das Modell wird zum einen der `adam`-Optimierer und zum anderen die `mean_squared_error` loss-Funktion genutzt.
 
+Für den `adam`-Optimierer haben wir uns, wie bereits oben beschrieben, entschieden, weil sich die Learningrate mit der Zeit automatisch anpasst und somit die Weights verbessert. Die Learningrate wurde hier nicht angepasst und ist damit standardmäßig auf 0,001 eingestellt. Dies ist möglich, da bei diesem Modell nicht so viele Daten zur Verfügung stehen und damit das Problem des Overfittings hier nicht eintritt.
+
+Die loss-Funktion `mean_aquared_error` ist für diesen Anwendungsfall sehr geeignet, weil die es bei diesem Modell darum geht, möglichst nahe an den tatsächlichen Output zu kommen. Mit dieser Funktion wird als Gundidee immer der vorhergesagte Output von dem tatsächlichen Output abzogen und davon das Quadrat benutzt. Damit kann bei diesem LSTM-Modell ein sehr niedriger loss-Wert erreicht werden. 
+
 
 ```python
 model.compile(loss='mean_squared_error', optimizer='adam')
@@ -1189,72 +1335,70 @@ model.compile(loss='mean_squared_error', optimizer='adam')
 history = model.fit(
     X_train_random, y_train_random,
     epochs=30,
-    batch_size=32, 
     validation_split=0.1,
-    shuffle=False
 )
 ```
 
     Epoch 1/30
-    51/51 [==============================] - 2s 16ms/step - loss: 0.0321 - val_loss: 0.0022
+    51/51 [==============================] - 2s 15ms/step - loss: 0.0291 - val_loss: 0.0028
     Epoch 2/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0079 - val_loss: 0.0015
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0076 - val_loss: 0.0022
     Epoch 3/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0048 - val_loss: 0.0012
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0051 - val_loss: 0.0023
     Epoch 4/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0043 - val_loss: 0.0011
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0039 - val_loss: 0.0015
     Epoch 5/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0042 - val_loss: 9.4342e-04
+    51/51 [==============================] - 1s 10ms/step - loss: 0.0033 - val_loss: 0.0014
     Epoch 6/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0031 - val_loss: 8.3985e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0031 - val_loss: 0.0013
     Epoch 7/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0028 - val_loss: 7.6705e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0031 - val_loss: 0.0011
     Epoch 8/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0024 - val_loss: 7.2804e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0022 - val_loss: 0.0011
     Epoch 9/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0025 - val_loss: 9.0766e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0027 - val_loss: 9.3278e-04
     Epoch 10/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0022 - val_loss: 5.8145e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0019 - val_loss: 8.6943e-04
     Epoch 11/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0024 - val_loss: 6.1137e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0019 - val_loss: 0.0012
     Epoch 12/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0024 - val_loss: 5.3011e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0016 - val_loss: 8.5512e-04
     Epoch 13/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0018 - val_loss: 5.3402e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0021 - val_loss: 8.4981e-04
     Epoch 14/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0016 - val_loss: 5.1521e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0026 - val_loss: 9.5041e-04
     Epoch 15/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 5.9149e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0020 - val_loss: 7.6496e-04
     Epoch 16/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0020 - val_loss: 5.1259e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0016 - val_loss: 0.0011
     Epoch 17/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 4.7698e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0018 - val_loss: 7.9766e-04
     Epoch 18/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0016 - val_loss: 4.9428e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0018 - val_loss: 8.2490e-04
     Epoch 19/30
-    51/51 [==============================] - 1s 10ms/step - loss: 0.0017 - val_loss: 5.7487e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0017 - val_loss: 6.6944e-04
     Epoch 20/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0020 - val_loss: 4.8435e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0021 - val_loss: 8.7036e-04
     Epoch 21/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0016 - val_loss: 5.6698e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0015 - val_loss: 7.2509e-04
     Epoch 22/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0016 - val_loss: 4.5898e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0017 - val_loss: 6.9839e-04
     Epoch 23/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0014 - val_loss: 4.3647e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0014 - val_loss: 7.7382e-04
     Epoch 24/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0015 - val_loss: 4.4453e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0015 - val_loss: 6.8882e-04
     Epoch 25/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0017 - val_loss: 4.1875e-04
+    51/51 [==============================] - 0s 10ms/step - loss: 0.0013 - val_loss: 6.9376e-04
     Epoch 26/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 4.5498e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0011 - val_loss: 6.7872e-04
     Epoch 27/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 4.5772e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0014 - val_loss: 7.2011e-04
     Epoch 28/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 3.9038e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0013 - val_loss: 7.6076e-04
     Epoch 29/30
-    51/51 [==============================] - 0s 8ms/step - loss: 0.0013 - val_loss: 4.8555e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0014 - val_loss: 6.0709e-04
     Epoch 30/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0014 - val_loss: 4.3776e-04
+    51/51 [==============================] - 0s 9ms/step - loss: 0.0013 - val_loss: 7.6866e-04
     
 
 Die loss-Rate sollte bei einem Modell immer so gering wie nur möglich sein. In dem folgendem Diagramm ist gut zu sehen, dass die loss-Rate in den ersten Epochen noch relativ hoch war und sich dann immer mehr einer Zahl nahe 0,0015 angegelichen hat. Die Rate wurde dann auch ziemlich konstant über die restlichen Epochen gehalten. 
@@ -1291,7 +1435,7 @@ plt.show()
 
 
     
-![png](output_72_0.png)
+![png](output_73_0.png)
     
 
 
@@ -1317,7 +1461,23 @@ plt.show();
 
 
     
-![png](output_75_0.png)
+![png](output_76_0.png)
+    
+
+
+
+```python
+plt.plot(np.arange(0, 365), y_train[0:365], 'g', label="true")
+plt.plot(np.arange(0, 365), predicted_price[0:365], 'r', label="prediction")
+plt.ylabel('Price')
+plt.xlabel('Time Step')
+plt.legend()
+plt.show();
+```
+
+
+    
+![png](output_77_0.png)
     
 
 
@@ -1333,7 +1493,7 @@ plt.show();
 
 
     
-![png](output_76_0.png)
+![png](output_78_0.png)
     
 
 
@@ -1358,7 +1518,7 @@ plt.show();
 
 
     
-![png](output_78_0.png)
+![png](output_80_0.png)
     
 
 
@@ -1387,6 +1547,53 @@ Hier laden wir den Token für die Twitter API, dieser sollte sich im Rootordner 
 ```python
 search_args = load_credentials("./.twitter_keys.yaml", yaml_key="search_tweets_v2")
 ```
+
+    cannot read file ./.twitter_keys.yaml
+    Error parsing YAML file; searching for valid environment variables
+    Your credentials are not configured correctly and  you are missing a required field. Please see the  readme for proper configuration
+    
+
+
+    ---------------------------------------------------------------------------
+
+    KeyError                                  Traceback (most recent call last)
+
+    ~/opt/anaconda3/lib/python3.7/site-packages/searchtweets/credentials.py in _parse_credentials(search_creds, api_version)
+         70         search_args = {
+    ---> 71             "bearer_token": search_creds["bearer_token"],
+         72             "endpoint": search_creds["endpoint"],
+    
+
+    KeyError: 'bearer_token'
+
+    
+    During handling of the above exception, another exception occurred:
+    
+
+    KeyError                                  Traceback (most recent call last)
+
+    <ipython-input-47-b1ebfbc12001> in <module>
+    ----> 1 search_args = load_credentials("./.twitter_keys.yaml", yaml_key="search_tweets_v2")
+    
+
+    ~/opt/anaconda3/lib/python3.7/site-packages/searchtweets/credentials.py in load_credentials(filename, yaml_key, env_overwrite)
+        150                    if env_overwrite
+        151                    else merge_dicts(env_vars, yaml_vars))
+    --> 152     parsed_vars = _parse_credentials(merged_vars)
+        153     return parsed_vars
+        154 
+    
+
+    ~/opt/anaconda3/lib/python3.7/site-packages/searchtweets/credentials.py in _parse_credentials(search_creds, api_version)
+         77                      " you are missing a required field. Please see the "
+         78                      " readme for proper configuration")
+    ---> 79         raise KeyError
+         80 
+         81     return search_args
+    
+
+    KeyError: 
+
 
 Hier definieren wir unsere Queryparameter. Wir laden 100 Tweets, was das Maximum für einen einzelnen API Request ist und geben an, dass alle Tweets mit den Keywords "ether", "eth", "ethereum" oder "cryptocurrency" gefetcht werden sollen. Weiterhin filtern wir Tweets von Bots heraus und Tweets, die das Wort "app" enthalten, da dies meist nur Werbung ist. Zusätzlich müssen die Nutzer verifiziert sein und die Sprache englisch.
 
@@ -1423,8 +1630,21 @@ for tweet in tweets:
     create_dates.append(epoch_time)
 ```
 
-    {'text': '“We operate under the ether of a sinister &amp; paralyzing mythology, suffer from massive failure of imagination. The humanitarian sector is nowhere near the size of its true potential”. Lack of imagination &amp; scoffing at anything faith based is part of problem https://t.co/mV5bqHt1wN', 'public_metrics': {'retweet_count': 2, 'reply_count': 2, 'like_count': 7, 'quote_count': 0}, 'created_at': '2021-03-22T04:45:34.000Z', 'id': '1373858367505014789'}
+
+    ---------------------------------------------------------------------------
+
+    NameError                                 Traceback (most recent call last)
+
+    <ipython-input-49-c2b81d2995aa> in <module>
+    ----> 1 tweets = list(reversed(collect_results(query, max_tweets=max_tweets, result_stream_args=search_args)))
+          2 
+          3 tweets.pop(0)
+          4 
+          5 print(tweets[0])
     
+
+    NameError: name 'search_args' is not defined
+
 
 Hier übergeben wir unseren Sentimentmodel den Batch an gefetchten Tweets. Dannach formatieren wir noch das Sentiment, sodass es von -1 bis 1 geht. Somit kann man besser unterscheiden, ob Tweets negativ oder positiv gemeint sind.
 
@@ -1493,7 +1713,7 @@ plt.show()
 
 
     
-![png](output_93_0.png)
+![png](output_95_0.png)
     
 
 
@@ -1548,7 +1768,7 @@ plt.show()
 
 
     
-![png](output_97_0.png)
+![png](output_99_0.png)
     
 
 
@@ -1578,7 +1798,7 @@ plt.show()
 
 
     
-![png](output_99_0.png)
+![png](output_101_0.png)
     
 
 
@@ -1634,7 +1854,7 @@ def create_data(df, X_scaler_predict, y_scaler_predict):
 ```
 
 ### Vorhersage des Kurses 30 Tage in die Zukunft
-Für die Vorhersage werden die Daten der letzten 56 Tage abgefragt, anschließend werden wieder alle Indicatoren hinzugefügt. Danach wird der Datensatz wieder auf 30 Einträge gekürzt (wie Batch-Größe) und eine Vorhersage für den nächsten Tag gemacht. Anhand von dem vorhergesagten Preis müssen mit der Funktion oben wieder die verschiedenen Indikatoren berechnet und die Daten in das richtige Format gebracht werden. Danach wird wieder eine Vorhersage für den nächsten Tag gemacht und dies wiederholt sich 30 mal und am Ende ist ein Diagramm mit der Vorhersage für die nächsten 30 Tage zu sehen. 
+Für die Vorhersage werden die Daten der letzten 81 Tage abgefragt, anschließend werden wieder alle Indicatoren hinzugefügt. Danach wird der Datensatz wieder auf 31 Einträge gekürzt (wie Batch-Größe) und eine Vorhersage für den nächsten Tag gemacht. Anhand von dem vorhergesagten Preis müssen mit der Funktion oben wieder die verschiedenen Indikatoren berechnet und die Daten in das richtige Format gebracht werden. Danach wird wieder eine Vorhersage für den nächsten Tag gemacht und dies wiederholt sich 30 mal und am Ende ist ein Diagramm mit der Vorhersage für die nächsten 30 Tage zu sehen. 
 
 
 ```python
@@ -1672,7 +1892,7 @@ for i in range(days_in_future):
 print(y_predicted_all)
 ```
 
-    [1723.8058, 1713.8246, 1705.2152, 1696.3575, 1680.9337, 1670.4683, 1669.3579, 1669.7205, 1665.5104, 1663.6744, 1661.0651, 1664.9491, 1666.4053, 1673.3661, 1678.3859, 1683.1365, 1694.4926, 1703.9674, 1706.0189, 1719.1744, 1723.9122, 1736.337, 1771.7825, 1790.2035, 1791.8595, 1795.5083, 1805.3932, 1814.0636, 1822.4109, 1830.3983]
+    [1749.3828, 1767.5387, 1760.5474, 1758.8422, 1755.4767, 1751.7753, 1749.456, 1785.9349, 1795.8102, 1810.6615, 1819.6035, 1825.635, 1860.7607, 1866.941, 1867.2777, 1873.1287, 1879.0148, 1885.1882, 1890.3483, 1891.2996, 1874.3785, 1871.3011, 1870.9244, 1869.8748, 1862.2896, 1857.7894, 1853.5325, 1849.5038, 1836.4419, 1827.4042]
     
 
 
@@ -1689,6 +1909,22 @@ plt.show()
 
 
     
-![png](output_104_0.png)
+![png](output_106_0.png)
     
 
+
+#### Herausforderungen bei einem produktiven Einsatz der Modelle
+
+Nachdem die ersten Vorhersagen mit einem Modell getroffen wurde, stellt sich auch die Frage, wie diese Modelle nun innerhalb einer produktiven Umgebung eingesetzt werden können.
+Dabei stellen sich einige Herausforderungen:
+
+1. **Wie werden die Modelle bereitgestellt?:**
+Es muss eine API programmiert werden, die entsprechende Endpunkte bereitstellt, um mit den Modellen zu interagieren.
+
+2. **Welche Anforderungen können an die API gestellt werden?:**
+Es gilt weiterhin zu untersuchen, ob und inwiefern Parameter bei der bisherigen Nutzung des Modells *hardgecodet* wurden, die nun extrahiert und konfigurierbar gemacht werden müssen, sodass eine nutzerindividuelle Anfrage möglich ist.
+
+3. **Datentransformation:**
+Die Datentransformation, die während des Trainings und den initialen Vorhersagen durchgeführt wurde muss auch entsprechend der Live-Datenquelle durchgeführt werden. Das bedeutet, evtl. Aufwändige Datenebereinigung oder Vorbereitungen für das Modell müssen innerhalb der API durchgeführt werden. So stellen sich evtl. neue Anforderungen an das Modell, damit Transformationen nicht zu aufwändig sind, um eine Responsivität der API zu gewährleisten.
+
+Zusammenfassend lässt sich sagen, dass es einige Aufgaben zu erledigen gilt, bevor ein trainiertes ML-Modell produktiv genutzt werden kann.
