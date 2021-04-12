@@ -4,6 +4,8 @@
 
 Dieses Notebook beinhaltet die Prüfungsleistung im Kurs WWI18SEA/C für Machine Learning bei Frau Minges. Es wurde erstellt von Patrick Mischka, Jan Grübener, Matthias Vonend, Aaron Schweig, Michael Angermeier und Troy Keßler.
 
+Hinweis: Alle Sektionen, welche mit @ annotiert sind, sind lediglich Einteilungen für die Präsentation und stellen nicht die Leistung der Personen dar.
+
 ## Inhalt
 
 Ziel ist mithilfe von Machine Learning eine Trading Recommendation für Ethereum zu entwickeln. Diese soll aus zwei Teilen bestehen, zum einen aus einer technischen Analyse, wo ein LSTM Modell unter Verwendung von historischen Preisen und Indikatoren entwickelt und trainiert wird, und zum Anderen aus einer Stimmungsanalyse auf Twitter, wofür ein weiteres Deep Neural Network entwickelt und trainiert wird. Letztendlich sollen die Ergebnisse dieser Modelle Entscheidungshilfen sein, um Ethereum zu handeln.
@@ -115,29 +117,29 @@ dataframe.head()
   </thead>
   <tbody>
     <tr>
-      <th>904961</th>
-      <td>4</td>
-      <td>@hintswen oh.. Hope they will throw something ...</td>
-    </tr>
-    <tr>
-      <th>1248968</th>
-      <td>4</td>
-      <td>@fudosan  True. I'm going for both, but if I d...</td>
-    </tr>
-    <tr>
-      <th>1564544</th>
-      <td>4</td>
-      <td>@cindylake Enrolled there but ended up going t...</td>
-    </tr>
-    <tr>
-      <th>84534</th>
+      <th>279758</th>
       <td>0</td>
-      <td>school sicks study sucks and so do tests  CANT...</td>
+      <td>@rocsidiaz me too  I can't believe what happened.</td>
     </tr>
     <tr>
-      <th>526828</th>
+      <th>1320597</th>
+      <td>4</td>
+      <td>@deelectable  I'm sorry to hear that Dee,keep ...</td>
+    </tr>
+    <tr>
+      <th>634510</th>
       <td>0</td>
-      <td>I hate it here it`s raining all day</td>
+      <td>Its boring home alone when ur sik and nothing ...</td>
+    </tr>
+    <tr>
+      <th>370976</th>
+      <td>0</td>
+      <td>Settling down in Manila</td>
+    </tr>
+    <tr>
+      <th>977684</th>
+      <td>4</td>
+      <td>@JonasBrothers you new album cover &amp;quot;Lines...</td>
     </tr>
   </tbody>
 </table>
@@ -194,12 +196,12 @@ for text_batch, label_batch in raw_train_ds.take(1):
     print("Label:", label_batch.numpy()[i])
 ```
 
-    Tweet: b"My boyfriend looks so freaking good today. I'm a lucky girl "
+    Tweet: b'Rather tired. But, the morning shows promise with the rising sun.  #fb'
     Label: 4
-    Tweet: b'@rlbates You are an inspiration. Maybe I will go out in the rain as well. '
+    Tweet: b"g'morning!! twittersss!!!  wake up!!!"
     Label: 4
-    Tweet: b"Goodnight twitters's's's' hahaha ! Mkay we'll'p call or text, might go workout early tomorrow -____- I'm so fat its not funny. "
-    Label: 4
+    Tweet: b'my favourite patient died today, what a downer '
+    Label: 0
     
 
 @matthias
@@ -259,11 +261,11 @@ print(label)
 print(vectorize_text(text, label))
 ```
 
-    tf.Tensor(b"My boyfriend looks so freaking good today. I'm a lucky girl ", shape=(), dtype=string)
+    tf.Tensor(b'Rather tired. But, the morning shows promise with the rising sun.  #fb', shape=(), dtype=string)
     tf.Tensor(4, shape=(), dtype=int64)
     (<tf.Tensor: shape=(1, 56), dtype=int64, numpy=
-    array([[   6, 1065,  240,   15, 1071,   29,  216,   19,    5,  634,  350,
-               0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    array([[ 742,  825, 1452,    4,  121,  984, 1830,   22,    4, 9892, 3185,
+            1068,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -278,7 +280,7 @@ print("1234 ---> ", vectorize_layer.get_vocabulary()[1234])
 print('Vocabulary size: {}'.format(len(vectorize_layer.get_vocabulary())))
 ```
 
-    1234 --->  terrible
+    1234 --->  middle
     Vocabulary size: 10000
     
 
@@ -371,25 +373,25 @@ history = model.fit(
 ```
 
     Epoch 1/10
-    3200/3200 [==============================] - 13s 4ms/step - loss: 0.6869 - binary_accuracy: 0.5850 - val_loss: 0.6544 - val_binary_accuracy: 0.6893
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.6862 - binary_accuracy: 0.5982 - val_loss: 0.6522 - val_binary_accuracy: 0.6898
     Epoch 2/10
-    3200/3200 [==============================] - 10s 3ms/step - loss: 0.6404 - binary_accuracy: 0.6943 - val_loss: 0.6021 - val_binary_accuracy: 0.7168
+    3200/3200 [==============================] - 19s 6ms/step - loss: 0.6385 - binary_accuracy: 0.6971 - val_loss: 0.5999 - val_binary_accuracy: 0.7179
     Epoch 3/10
-    3200/3200 [==============================] - 10s 3ms/step - loss: 0.5910 - binary_accuracy: 0.7228 - val_loss: 0.5633 - val_binary_accuracy: 0.7387
+    3200/3200 [==============================] - 19s 6ms/step - loss: 0.5894 - binary_accuracy: 0.7242 - val_loss: 0.5612 - val_binary_accuracy: 0.7406
     Epoch 4/10
-    3200/3200 [==============================] - 10s 3ms/step - loss: 0.5547 - binary_accuracy: 0.7447 - val_loss: 0.5352 - val_binary_accuracy: 0.7542
+    3200/3200 [==============================] - 19s 6ms/step - loss: 0.5536 - binary_accuracy: 0.7451 - val_loss: 0.5333 - val_binary_accuracy: 0.7555
     Epoch 5/10
-    3200/3200 [==============================] - 10s 3ms/step - loss: 0.5286 - binary_accuracy: 0.7595 - val_loss: 0.5155 - val_binary_accuracy: 0.7647
+    3200/3200 [==============================] - 19s 6ms/step - loss: 0.5279 - binary_accuracy: 0.7596 - val_loss: 0.5138 - val_binary_accuracy: 0.7662
     Epoch 6/10
-    3200/3200 [==============================] - 10s 3ms/step - loss: 0.5104 - binary_accuracy: 0.7690 - val_loss: 0.5021 - val_binary_accuracy: 0.7713
+    3200/3200 [==============================] - 19s 6ms/step - loss: 0.5100 - binary_accuracy: 0.7689 - val_loss: 0.5006 - val_binary_accuracy: 0.7726
     Epoch 7/10
-    3200/3200 [==============================] - 10s 3ms/step - loss: 0.4979 - binary_accuracy: 0.7753 - val_loss: 0.4931 - val_binary_accuracy: 0.7759
+    3200/3200 [==============================] - 20s 6ms/step - loss: 0.4978 - binary_accuracy: 0.7751 - val_loss: 0.4917 - val_binary_accuracy: 0.7766
     Epoch 8/10
-    3200/3200 [==============================] - 13s 4ms/step - loss: 0.4893 - binary_accuracy: 0.7797 - val_loss: 0.4870 - val_binary_accuracy: 0.7793
+    3200/3200 [==============================] - 20s 6ms/step - loss: 0.4895 - binary_accuracy: 0.7796 - val_loss: 0.4857 - val_binary_accuracy: 0.7799
     Epoch 9/10
-    3200/3200 [==============================] - 15s 5ms/step - loss: 0.4835 - binary_accuracy: 0.7830 - val_loss: 0.4827 - val_binary_accuracy: 0.7817
+    3200/3200 [==============================] - 19s 6ms/step - loss: 0.4836 - binary_accuracy: 0.7827 - val_loss: 0.4814 - val_binary_accuracy: 0.7827
     Epoch 10/10
-    3200/3200 [==============================] - 14s 4ms/step - loss: 0.4791 - binary_accuracy: 0.7855 - val_loss: 0.4795 - val_binary_accuracy: 0.7835
+    3200/3200 [==============================] - 19s 6ms/step - loss: 0.4794 - binary_accuracy: 0.7849 - val_loss: 0.4783 - val_binary_accuracy: 0.7843
     
 
 Nachdem das Modell nur trainiert ist können wir es mit den vorher festgelegten Testdatensatz testen. Diese sollen wie bereits erwähnt echte Daten simulieren. Dabei erhalten wir mit `model.evaluate()` den Loss und die Accuracy, welche bei rund 80% liegt.
@@ -402,9 +404,9 @@ print("Loss: ", loss)
 print("Accuracy: ", accuracy)
 ```
 
-    1000/1000 [==============================] - 2s 2ms/step - loss: 0.4785 - binary_accuracy: 0.7847A: 1s - loss
-    Loss:  0.4785330593585968
-    Accuracy:  0.7847062349319458
+    1000/1000 [==============================] - 3s 3ms/step - loss: 0.4788 - binary_accuracy: 0.7841
+    Loss:  0.4788129925727844
+    Accuracy:  0.7840874791145325
     
 
 In dem History-Objekt können wir nun sehen, welche Daten Tensorflow für uns aufgezeichnet hat.
@@ -503,9 +505,9 @@ sentiment_model.predict(examples)
 
 
 
-    array([[0.8452177 ],
-           [0.516922  ],
-           [0.42318448]], dtype=float32)
+    array([[0.8559035 ],
+           [0.53341323],
+           [0.44238377]], dtype=float32)
 
 
 
@@ -655,53 +657,53 @@ df
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-03-22</th>
-      <td>1811.968262</td>
-      <td>1674.299805</td>
-      <td>1788.362183</td>
-      <td>1691.333984</td>
-      <td>2.359930e+10</td>
-      <td>1691.333984</td>
+      <th>2021-04-07</th>
+      <td>2091.516357</td>
+      <td>1959.079468</td>
+      <td>1969.133179</td>
+      <td>2088.573730</td>
+      <td>2.531296e+10</td>
+      <td>2088.573730</td>
     </tr>
     <tr>
-      <th>2021-03-23</th>
-      <td>1725.108765</td>
-      <td>1662.539917</td>
-      <td>1690.871826</td>
-      <td>1678.650146</td>
-      <td>2.199824e+10</td>
-      <td>1678.650146</td>
+      <th>2021-04-08</th>
+      <td>2102.873779</td>
+      <td>2055.163330</td>
+      <td>2088.772217</td>
+      <td>2072.108887</td>
+      <td>1.981247e+10</td>
+      <td>2072.108887</td>
     </tr>
     <tr>
-      <th>2021-03-24</th>
-      <td>1740.428223</td>
-      <td>1570.787964</td>
-      <td>1678.002563</td>
-      <td>1593.413452</td>
-      <td>3.122805e+10</td>
-      <td>1593.413452</td>
+      <th>2021-04-09</th>
+      <td>2196.996338</td>
+      <td>2062.787598</td>
+      <td>2071.111572</td>
+      <td>2135.942139</td>
+      <td>2.498624e+10</td>
+      <td>2135.942139</td>
     </tr>
     <tr>
-      <th>2021-03-25</th>
-      <td>1625.911499</td>
-      <td>1560.370483</td>
-      <td>1593.123291</td>
-      <td>1595.359253</td>
-      <td>2.965033e+10</td>
-      <td>1595.359253</td>
+      <th>2021-04-10</th>
+      <td>2165.191406</td>
+      <td>2119.865723</td>
+      <td>2136.156982</td>
+      <td>2157.656982</td>
+      <td>1.969284e+10</td>
+      <td>2157.656982</td>
     </tr>
     <tr>
-      <th>2021-03-26</th>
-      <td>1642.629517</td>
-      <td>1601.886963</td>
-      <td>1631.285767</td>
-      <td>1632.108032</td>
-      <td>2.338702e+10</td>
-      <td>1632.108032</td>
+      <th>2021-04-12</th>
+      <td>2197.135010</td>
+      <td>2127.327637</td>
+      <td>2154.569824</td>
+      <td>2146.914795</td>
+      <td>2.070091e+10</td>
+      <td>2146.914795</td>
     </tr>
   </tbody>
 </table>
-<p>2055 rows × 6 columns</p>
+<p>2072 rows × 6 columns</p>
 </div>
 
 
@@ -868,78 +870,78 @@ df
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-03-22</th>
-      <td>1691.333984</td>
-      <td>1761.219993</td>
-      <td>1.114866</td>
-      <td>-5.993458</td>
-      <td>17.639106</td>
-      <td>46.759592</td>
-      <td>40.0</td>
-      <td>1761.160815</td>
-      <td>22</td>
-      <td>0</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>2021-03-23</th>
-      <td>1678.650146</td>
-      <td>1744.100088</td>
-      <td>0.516764</td>
-      <td>-8.079356</td>
-      <td>10.189193</td>
-      <td>45.970035</td>
-      <td>40.0</td>
-      <td>1766.300665</td>
-      <td>23</td>
-      <td>1</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>2021-03-24</th>
-      <td>1593.413452</td>
-      <td>1711.735024</td>
-      <td>-0.362963</td>
-      <td>-10.083445</td>
-      <td>-0.659070</td>
-      <td>40.964188</td>
-      <td>40.0</td>
-      <td>1768.875623</td>
-      <td>24</td>
+      <th>2021-04-07</th>
+      <td>2088.573730</td>
+      <td>1929.440517</td>
+      <td>4.222327</td>
+      <td>21.676683</td>
+      <td>61.838740</td>
+      <td>60.071002</td>
+      <td>45.0</td>
+      <td>1869.117334</td>
+      <td>7</td>
       <td>2</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>2021-03-25</th>
-      <td>1595.359253</td>
-      <td>1691.277535</td>
-      <td>-1.009349</td>
-      <td>-17.110649</td>
-      <td>-8.840453</td>
-      <td>41.121809</td>
-      <td>-55.0</td>
-      <td>1771.979834</td>
-      <td>25</td>
-      <td>3</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>2021-03-26</th>
-      <td>1632.108032</td>
-      <td>1683.552312</td>
-      <td>-1.290126</td>
-      <td>-11.995070</td>
-      <td>-12.820552</td>
-      <td>44.154416</td>
-      <td>-55.0</td>
-      <td>1770.848157</td>
-      <td>26</td>
       <td>4</td>
+    </tr>
+    <tr>
+      <th>2021-04-08</th>
+      <td>2072.108887</td>
+      <td>1937.544057</td>
+      <td>4.078237</td>
+      <td>13.871849</td>
+      <td>60.840802</td>
+      <td>59.096261</td>
+      <td>45.0</td>
+      <td>1882.091046</td>
+      <td>8</td>
       <td>3</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2021-04-09</th>
+      <td>2135.942139</td>
+      <td>1948.373238</td>
+      <td>4.168079</td>
+      <td>26.285784</td>
+      <td>62.926516</td>
+      <td>61.691591</td>
+      <td>45.0</td>
+      <td>1899.477301</td>
+      <td>9</td>
+      <td>4</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2021-04-10</th>
+      <td>2157.656982</td>
+      <td>1957.760501</td>
+      <td>4.246078</td>
+      <td>16.880694</td>
+      <td>64.873936</td>
+      <td>62.561830</td>
+      <td>90.0</td>
+      <td>1922.793451</td>
+      <td>10</td>
+      <td>5</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2021-04-12</th>
+      <td>2146.914795</td>
+      <td>1958.643687</td>
+      <td>4.178794</td>
+      <td>11.913952</td>
+      <td>64.784705</td>
+      <td>61.813746</td>
+      <td>90.0</td>
+      <td>1946.206683</td>
+      <td>12</td>
+      <td>0</td>
+      <td>4</td>
     </tr>
   </tbody>
 </table>
-<p>2036 rows × 11 columns</p>
+<p>2053 rows × 11 columns</p>
 </div>
 
 
@@ -981,8 +983,8 @@ print(X_data.shape)
 print(y_data.shape)
 ```
 
-    (2034, 11)
-    (2034, 1)
+    (2053, 11)
+    (2053, 1)
     
 
 ### Transformation der Daten
@@ -1053,70 +1055,70 @@ X_scaled_data
   <tbody>
     <tr>
       <th>2015-08-25</th>
-      <td>0.000370</td>
-      <td>0.000470</td>
+      <td>0.000336</td>
+      <td>0.000428</td>
       <td>0.087378</td>
       <td>0.076386</td>
       <td>0.333897</td>
       <td>0.257724</td>
       <td>0.447368</td>
-      <td>0.000432</td>
+      <td>0.000397</td>
       <td>0.800000</td>
       <td>0.166667</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-26</th>
-      <td>0.000364</td>
-      <td>0.000469</td>
+      <td>0.000330</td>
+      <td>0.000427</td>
       <td>0.089021</td>
       <td>0.097446</td>
       <td>0.333924</td>
       <td>0.254459</td>
       <td>0.631579</td>
-      <td>0.000387</td>
+      <td>0.000355</td>
       <td>0.833333</td>
       <td>0.333333</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-27</th>
-      <td>0.000386</td>
-      <td>0.000466</td>
+      <td>0.000351</td>
+      <td>0.000425</td>
       <td>0.101965</td>
       <td>0.135497</td>
       <td>0.333973</td>
       <td>0.276440</td>
       <td>0.631579</td>
-      <td>0.000399</td>
+      <td>0.000366</td>
       <td>0.866667</td>
       <td>0.500000</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-28</th>
-      <td>0.000382</td>
-      <td>0.000464</td>
+      <td>0.000347</td>
+      <td>0.000422</td>
       <td>0.114915</td>
       <td>0.239393</td>
       <td>0.334021</td>
       <td>0.273698</td>
       <td>0.605263</td>
-      <td>0.000412</td>
+      <td>0.000378</td>
       <td>0.900000</td>
       <td>0.666667</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-29</th>
-      <td>0.000451</td>
-      <td>0.000462</td>
+      <td>0.000410</td>
+      <td>0.000420</td>
       <td>0.152030</td>
       <td>0.347686</td>
       <td>0.334117</td>
       <td>0.344430</td>
       <td>0.578947</td>
-      <td>0.000430</td>
+      <td>0.000394</td>
       <td>0.933333</td>
       <td>0.833333</td>
       <td>0.636364</td>
@@ -1136,78 +1138,78 @@ X_scaled_data
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-03-20</th>
-      <td>0.924719</td>
-      <td>0.988341</td>
-      <td>0.462089</td>
-      <td>0.241949</td>
-      <td>0.506749</td>
-      <td>0.505809</td>
-      <td>0.789474</td>
-      <td>0.974376</td>
-      <td>0.633333</td>
-      <td>0.833333</td>
-      <td>0.181818</td>
-    </tr>
-    <tr>
-      <th>2021-03-21</th>
-      <td>0.912259</td>
-      <td>0.988522</td>
-      <td>0.455772</td>
-      <td>0.227568</td>
-      <td>0.488552</td>
-      <td>0.482838</td>
-      <td>0.789474</td>
-      <td>0.980636</td>
-      <td>0.666667</td>
-      <td>1.000000</td>
-      <td>0.181818</td>
-    </tr>
-    <tr>
-      <th>2021-03-22</th>
-      <td>0.862823</td>
-      <td>0.987516</td>
-      <td>0.439029</td>
-      <td>0.219509</td>
-      <td>0.438888</td>
-      <td>0.399439</td>
-      <td>0.710526</td>
-      <td>0.986202</td>
-      <td>0.700000</td>
-      <td>0.000000</td>
-      <td>0.181818</td>
-    </tr>
-    <tr>
-      <th>2021-03-23</th>
-      <td>0.856350</td>
-      <td>0.977914</td>
-      <td>0.424583</td>
-      <td>0.209735</td>
-      <td>0.394960</td>
-      <td>0.389287</td>
-      <td>0.710526</td>
-      <td>0.989081</td>
-      <td>0.733333</td>
-      <td>0.166667</td>
-      <td>0.181818</td>
-    </tr>
-    <tr>
-      <th>2021-03-24</th>
-      <td>0.881022</td>
-      <td>0.977164</td>
-      <td>0.419368</td>
-      <td>0.235666</td>
-      <td>0.377158</td>
-      <td>0.434319</td>
-      <td>0.710526</td>
-      <td>0.994265</td>
-      <td>0.766667</td>
+      <th>2021-04-07</th>
+      <td>0.967976</td>
+      <td>0.985086</td>
+      <td>0.514079</td>
+      <td>0.349158</td>
+      <td>0.699510</td>
+      <td>0.570588</td>
+      <td>0.736842</td>
+      <td>0.960378</td>
+      <td>0.200000</td>
       <td>0.333333</td>
-      <td>0.181818</td>
+      <td>0.272727</td>
+    </tr>
+    <tr>
+      <th>2021-04-08</th>
+      <td>0.960343</td>
+      <td>0.989224</td>
+      <td>0.510599</td>
+      <td>0.312588</td>
+      <td>0.693626</td>
+      <td>0.558056</td>
+      <td>0.736842</td>
+      <td>0.967046</td>
+      <td>0.233333</td>
+      <td>0.500000</td>
+      <td>0.272727</td>
+    </tr>
+    <tr>
+      <th>2021-04-09</th>
+      <td>0.989934</td>
+      <td>0.994755</td>
+      <td>0.512769</td>
+      <td>0.370754</td>
+      <td>0.705924</td>
+      <td>0.591425</td>
+      <td>0.736842</td>
+      <td>0.975982</td>
+      <td>0.266667</td>
+      <td>0.666667</td>
+      <td>0.272727</td>
+    </tr>
+    <tr>
+      <th>2021-04-10</th>
+      <td>1.000000</td>
+      <td>0.999549</td>
+      <td>0.514652</td>
+      <td>0.326686</td>
+      <td>0.717407</td>
+      <td>0.602614</td>
+      <td>0.973684</td>
+      <td>0.987966</td>
+      <td>0.300000</td>
+      <td>0.833333</td>
+      <td>0.272727</td>
+    </tr>
+    <tr>
+      <th>2021-04-12</th>
+      <td>0.995020</td>
+      <td>1.000000</td>
+      <td>0.513027</td>
+      <td>0.303415</td>
+      <td>0.716881</td>
+      <td>0.592995</td>
+      <td>0.973684</td>
+      <td>1.000000</td>
+      <td>0.366667</td>
+      <td>0.000000</td>
+      <td>0.272727</td>
     </tr>
   </tbody>
 </table>
-<p>2034 rows × 11 columns</p>
+<p>2053 rows × 11 columns</p>
 </div>
 
 
@@ -1272,7 +1274,7 @@ X_train_random.shape
 
 
 
-    (1801, 31, 11)
+    (1818, 31, 11)
 
 
 
@@ -1340,65 +1342,65 @@ history = model.fit(
 ```
 
     Epoch 1/30
-    51/51 [==============================] - 2s 15ms/step - loss: 0.0291 - val_loss: 0.0028
+    52/52 [==============================] - 2s 15ms/step - loss: 0.1119 - val_loss: 0.0100
     Epoch 2/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0076 - val_loss: 0.0022
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0182 - val_loss: 0.0036
     Epoch 3/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0051 - val_loss: 0.0023
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0096 - val_loss: 0.0024
     Epoch 4/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0039 - val_loss: 0.0015
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0072 - val_loss: 0.0017
     Epoch 5/30
-    51/51 [==============================] - 1s 10ms/step - loss: 0.0033 - val_loss: 0.0014
+    52/52 [==============================] - 0s 10ms/step - loss: 0.0060 - val_loss: 0.0016
     Epoch 6/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0031 - val_loss: 0.0013
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0049 - val_loss: 0.0015
     Epoch 7/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0031 - val_loss: 0.0011
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0053 - val_loss: 0.0012
     Epoch 8/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0022 - val_loss: 0.0011
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0038 - val_loss: 0.0011
     Epoch 9/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0027 - val_loss: 9.3278e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0033 - val_loss: 0.0011
     Epoch 10/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0019 - val_loss: 8.6943e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0033 - val_loss: 0.0011
     Epoch 11/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0019 - val_loss: 0.0012
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0031 - val_loss: 8.9440e-04
     Epoch 12/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0016 - val_loss: 8.5512e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0028 - val_loss: 8.2077e-04
     Epoch 13/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0021 - val_loss: 8.4981e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0026 - val_loss: 8.8024e-04
     Epoch 14/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0026 - val_loss: 9.5041e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0023 - val_loss: 8.4995e-04
     Epoch 15/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0020 - val_loss: 7.6496e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0033 - val_loss: 8.7410e-04
     Epoch 16/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0016 - val_loss: 0.0011
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0025 - val_loss: 7.9621e-04
     Epoch 17/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0018 - val_loss: 7.9766e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0023 - val_loss: 7.2030e-04
     Epoch 18/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0018 - val_loss: 8.2490e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0024 - val_loss: 6.8935e-04
     Epoch 19/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0017 - val_loss: 6.6944e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0021 - val_loss: 7.6832e-04
     Epoch 20/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0021 - val_loss: 8.7036e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0021 - val_loss: 7.6144e-04
     Epoch 21/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0015 - val_loss: 7.2509e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0022 - val_loss: 6.9209e-04
     Epoch 22/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0017 - val_loss: 6.9839e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0020 - val_loss: 6.1634e-04
     Epoch 23/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0014 - val_loss: 7.7382e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0024 - val_loss: 5.4894e-04
     Epoch 24/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0015 - val_loss: 6.8882e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0021 - val_loss: 5.6053e-04
     Epoch 25/30
-    51/51 [==============================] - 0s 10ms/step - loss: 0.0013 - val_loss: 6.9376e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0019 - val_loss: 7.0258e-04
     Epoch 26/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0011 - val_loss: 6.7872e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0014 - val_loss: 6.7917e-04
     Epoch 27/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0014 - val_loss: 7.2011e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 6.0671e-04
     Epoch 28/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0013 - val_loss: 7.6076e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 6.2589e-04
     Epoch 29/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0014 - val_loss: 6.0709e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0018 - val_loss: 6.2334e-04
     Epoch 30/30
-    51/51 [==============================] - 0s 9ms/step - loss: 0.0013 - val_loss: 7.6866e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 5.3012e-04
     
 
 Die loss-Rate sollte bei einem Modell immer so gering wie nur möglich sein. In dem folgendem Diagramm ist gut zu sehen, dass die loss-Rate in den ersten Epochen noch relativ hoch war und sich dann immer mehr einer Zahl nahe 0,0015 angegelichen hat. Die Rate wurde dann auch ziemlich konstant über die restlichen Epochen gehalten. 
@@ -1467,22 +1469,6 @@ plt.show();
 
 
 ```python
-plt.plot(np.arange(0, 365), y_train[0:365], 'g', label="true")
-plt.plot(np.arange(0, 365), predicted_price[0:365], 'r', label="prediction")
-plt.ylabel('Price')
-plt.xlabel('Time Step')
-plt.legend()
-plt.show();
-```
-
-
-    
-![png](output_77_0.png)
-    
-
-
-
-```python
 plt.plot(np.arange(0, 365), y_train[-365:], 'g', label="true")
 plt.plot(np.arange(0, 365), predicted_price[-365:], 'r', label="prediction")
 plt.ylabel('Price')
@@ -1493,7 +1479,7 @@ plt.show();
 
 
     
-![png](output_78_0.png)
+![png](output_77_0.png)
     
 
 
@@ -1518,7 +1504,7 @@ plt.show();
 
 
     
-![png](output_80_0.png)
+![png](output_79_0.png)
     
 
 
@@ -1547,53 +1533,6 @@ Hier laden wir den Token für die Twitter API, dieser sollte sich im Rootordner 
 ```python
 search_args = load_credentials("./.twitter_keys.yaml", yaml_key="search_tweets_v2")
 ```
-
-    cannot read file ./.twitter_keys.yaml
-    Error parsing YAML file; searching for valid environment variables
-    Your credentials are not configured correctly and  you are missing a required field. Please see the  readme for proper configuration
-    
-
-
-    ---------------------------------------------------------------------------
-
-    KeyError                                  Traceback (most recent call last)
-
-    ~/opt/anaconda3/lib/python3.7/site-packages/searchtweets/credentials.py in _parse_credentials(search_creds, api_version)
-         70         search_args = {
-    ---> 71             "bearer_token": search_creds["bearer_token"],
-         72             "endpoint": search_creds["endpoint"],
-    
-
-    KeyError: 'bearer_token'
-
-    
-    During handling of the above exception, another exception occurred:
-    
-
-    KeyError                                  Traceback (most recent call last)
-
-    <ipython-input-47-b1ebfbc12001> in <module>
-    ----> 1 search_args = load_credentials("./.twitter_keys.yaml", yaml_key="search_tweets_v2")
-    
-
-    ~/opt/anaconda3/lib/python3.7/site-packages/searchtweets/credentials.py in load_credentials(filename, yaml_key, env_overwrite)
-        150                    if env_overwrite
-        151                    else merge_dicts(env_vars, yaml_vars))
-    --> 152     parsed_vars = _parse_credentials(merged_vars)
-        153     return parsed_vars
-        154 
-    
-
-    ~/opt/anaconda3/lib/python3.7/site-packages/searchtweets/credentials.py in _parse_credentials(search_creds, api_version)
-         77                      " you are missing a required field. Please see the "
-         78                      " readme for proper configuration")
-    ---> 79         raise KeyError
-         80 
-         81     return search_args
-    
-
-    KeyError: 
-
 
 Hier definieren wir unsere Queryparameter. Wir laden 100 Tweets, was das Maximum für einen einzelnen API Request ist und geben an, dass alle Tweets mit den Keywords "ether", "eth", "ethereum" oder "cryptocurrency" gefetcht werden sollen. Weiterhin filtern wir Tweets von Bots heraus und Tweets, die das Wort "app" enthalten, da dies meist nur Werbung ist. Zusätzlich müssen die Nutzer verifiziert sein und die Sprache englisch.
 
@@ -1630,21 +1569,8 @@ for tweet in tweets:
     create_dates.append(epoch_time)
 ```
 
-
-    ---------------------------------------------------------------------------
-
-    NameError                                 Traceback (most recent call last)
-
-    <ipython-input-49-c2b81d2995aa> in <module>
-    ----> 1 tweets = list(reversed(collect_results(query, max_tweets=max_tweets, result_stream_args=search_args)))
-          2 
-          3 tweets.pop(0)
-          4 
-          5 print(tweets[0])
+    {'text': 'Bitcoin bulls hate to discuss the flaws of bitcoin. \n\nCryptocurrencies are the future of money. Bitcoin is not. \n\nRead my recent article, which explains how Bitcoin will be replaced by better cryptocurrencies, specifically with a cryptocurrency board.\nhttps://t.co/E5cc5MRAit', 'public_metrics': {'retweet_count': 74, 'reply_count': 659, 'like_count': 309, 'quote_count': 111}, 'created_at': '2021-04-12T00:09:10.000Z', 'id': '1381398954538045443'}
     
-
-    NameError: name 'search_args' is not defined
-
 
 Hier übergeben wir unseren Sentimentmodel den Batch an gefetchten Tweets. Dannach formatieren wir noch das Sentiment, sodass es von -1 bis 1 geht. Somit kann man besser unterscheiden, ob Tweets negativ oder positiv gemeint sind.
 
@@ -1664,12 +1590,24 @@ for i in range(5):
     print("{} - {} - {}".format(d,t,p))
 ```
 
-    1616388334.0 - “We operate under the ether of a sinister &amp; paralyzing mythology, suffer from massive failure of imagination. The humanitarian sector is nowhere near the size of its true potential”. Lack of imagination &amp; scoffing at anything faith based is part of problem https://t.co/mV5bqHt1wN - -0.5548605918884277
-    1616389213.0 - Really enjoyed my interview with @SanketD_ET of @etwealth, where I have tried to explain about the economic recovery outlook, inflation risks, #market insights, #SPAC and #cryptocurrency etc.
-    #IIFLSecurities #India https://t.co/B3EQO3DhHa - 0.038269996643066406
-    1616389569.0 - They're selling a set of my four @MyCurioCards from 2017 at 25 ETH. I am feeling genuine FOMO over not owning any of my own work. https://t.co/rYFkrsZktm - -0.8507745862007141
-    1616390020.0 - @ETNOWlive Our upcoming episode features @TimDraper talking about #decentralized #globalcurrency #Crypto @Bitcoin #Bitcoin #ethereum #indianeedscrypto #regulation @CoinSwitchKuber @AnoushBhasin @ThatNaimish @ianuragthakur @HeroCitySpace @Fintechtv1 https://t.co/lIdzcXjEFL - 0.5515286922454834
-    1616390028.0 - "The indictment alleges that the defendants knowingly operated the crypto exchange business in violation of federal anti-money laundering laws and regulations." https://t.co/kMgCkRpQNp - 0.5623154640197754
+    1618186150.0 - Bitcoin bulls hate to discuss the flaws of bitcoin. 
+    
+    Cryptocurrencies are the future of money. Bitcoin is not. 
+    
+    Read my recent article, which explains how Bitcoin will be replaced by better cryptocurrencies, specifically with a cryptocurrency board.
+    https://t.co/E5cc5MRAit - -0.05254906415939331
+    1618187341.0 - The global cryptocurrency market is now worth over $2 trillion.
+    
+    Bitcoin - $1 trillion
+    Ethereum - $242 billion
+    Binance Coin - $72 billion
+    XRP - $58 billion
+    Tether - $44 billion https://t.co/lqSd1KhSGi - 0.9182758331298828
+    1618189320.0 - HODL merch is still available for a limited time! Get it before it's gone: https://t.co/oMjErjsTSH #HODL #AUDL @theAUDL #eth #btc #bch #doge https://t.co/lamGmbQP7W - -0.01804947853088379
+    1618190255.0 - Same question but a little under a year later. 
+    
+    My best answer is now ETH + Bitcoin (and maybe YFI) https://t.co/KWXTLB2xiN - 0.5922045707702637
+    1618190265.0 - @BrantlyMillegan @DomainsFlx @sunnya97 I cannot say I have any issue with how .eth and ENS domains is doing what they are doing. It is more about the legacy TLD that I have issues - that I have noticed since before I found out about HNS. I'm curious though, if takedown request  made on .eth domain, what's process? - -0.5045856833457947
     
 
 Da wir den aktuellen Sentimenttrend bestimmen wollen implementieren wir eine Simple Moving Average
@@ -1713,7 +1651,7 @@ plt.show()
 
 
     
-![png](output_95_0.png)
+![png](output_94_0.png)
     
 
 
@@ -1768,7 +1706,7 @@ plt.show()
 
 
     
-![png](output_99_0.png)
+![png](output_98_0.png)
     
 
 
@@ -1798,7 +1736,7 @@ plt.show()
 
 
     
-![png](output_101_0.png)
+![png](output_100_0.png)
     
 
 
@@ -1892,7 +1830,7 @@ for i in range(days_in_future):
 print(y_predicted_all)
 ```
 
-    [1749.3828, 1767.5387, 1760.5474, 1758.8422, 1755.4767, 1751.7753, 1749.456, 1785.9349, 1795.8102, 1810.6615, 1819.6035, 1825.635, 1860.7607, 1866.941, 1867.2777, 1873.1287, 1879.0148, 1885.1882, 1890.3483, 1891.2996, 1874.3785, 1871.3011, 1870.9244, 1869.8748, 1862.2896, 1857.7894, 1853.5325, 1849.5038, 1836.4419, 1827.4042]
+    [2083.82, 2075.4836, 2068.7039, 2067.1519, 2066.6062, 2065.54, 2067.3257, 2070.519, 2071.4004, 2073.6355, 2078.7437, 2085.281, 2090.877, 2093.9055, 2096.084, 2096.0632, 2103.8884, 2109.9678, 2119.3357, 2126.87, 2128.6204, 2128.591, 2127.9043, 2127.1924, 2126.0662, 2125.7139, 2136.8489, 2138.9946, 2140.1228, 2140.8008]
     
 
 
@@ -1909,7 +1847,7 @@ plt.show()
 
 
     
-![png](output_106_0.png)
+![png](output_105_0.png)
     
 
 
