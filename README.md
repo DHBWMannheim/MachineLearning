@@ -57,12 +57,15 @@ import shutil
 import string
 import tensorflow as tf
 import pandas as pd
+import seaborn as sns
+import sklearn
 
 from tensorflow.keras import layers
 from tensorflow.keras import losses
 from tensorflow.keras import preprocessing
 from tensorflow.keras.layers.experimental.preprocessing import TextVectorization
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
 from sklearn.utils import shuffle
 from tensorflow import feature_column
 ```
@@ -117,29 +120,29 @@ dataframe.head()
   </thead>
   <tbody>
     <tr>
-      <th>279758</th>
+      <th>400821</th>
       <td>0</td>
-      <td>@rocsidiaz me too  I can't believe what happened.</td>
+      <td>@DebbieFletcher I'm not managed to vote more o...</td>
     </tr>
     <tr>
-      <th>1320597</th>
+      <th>716827</th>
+      <td>0</td>
+      <td>hmm.. 16gb iphone is not big enough</td>
+    </tr>
+    <tr>
+      <th>1350162</th>
       <td>4</td>
-      <td>@deelectable  I'm sorry to hear that Dee,keep ...</td>
+      <td>@gabesantos I concur. Hurry up and find my num...</td>
     </tr>
     <tr>
-      <th>634510</th>
+      <th>626421</th>
       <td>0</td>
-      <td>Its boring home alone when ur sik and nothing ...</td>
+      <td>@rockstarima OH NO!!!    How's the pizza?</td>
     </tr>
     <tr>
-      <th>370976</th>
+      <th>359780</th>
       <td>0</td>
-      <td>Settling down in Manila</td>
-    </tr>
-    <tr>
-      <th>977684</th>
-      <td>4</td>
-      <td>@JonasBrothers you new album cover &amp;quot;Lines...</td>
+      <td>got a horrible mermaid  damnit skye</td>
     </tr>
   </tbody>
 </table>
@@ -196,12 +199,12 @@ for text_batch, label_batch in raw_train_ds.take(1):
     print("Label:", label_batch.numpy()[i])
 ```
 
-    Tweet: b'Rather tired. But, the morning shows promise with the rising sun.  #fb'
-    Label: 4
-    Tweet: b"g'morning!! twittersss!!!  wake up!!!"
-    Label: 4
-    Tweet: b'my favourite patient died today, what a downer '
+    Tweet: b'is it just me or the new chrome browser is really buggy and slow '
     Label: 0
+    Tweet: b'It took days to type this  re: http://ff.im/3vMwf'
+    Label: 4
+    Tweet: b'@nadhiyamali now u plan to give me nightmares  i keep on adding people thinking, could be colleagues from other branches or journalists'
+    Label: 4
     
 
 @matthias
@@ -261,15 +264,15 @@ print(label)
 print(vectorize_text(text, label))
 ```
 
-    tf.Tensor(b'Rather tired. But, the morning shows promise with the rising sun.  #fb', shape=(), dtype=string)
-    tf.Tensor(4, shape=(), dtype=int64)
+    tf.Tensor(b'is it just me or the new chrome browser is really buggy and slow ', shape=(), dtype=string)
+    tf.Tensor(0, shape=(), dtype=int64)
     (<tf.Tensor: shape=(1, 56), dtype=int64, numpy=
-    array([[ 742,  825, 1452,    4,  121,  984, 1830,   22,    4, 9892, 3185,
-            1068,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    array([[   9,   12,   20,   18,   91,    4,   70, 5243, 4345,    9,   57,
+               1,    7,  931,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-               0]], dtype=int64)>, 1)
+               0]], dtype=int64)>, 0)
     
 
 Mithilfe des Vektorlayers können wir von den Ids wieder auf die Wörtern zurückschließen. Außerdem können wir die Größe unseres Wörterbuchs auslesen.
@@ -280,7 +283,7 @@ print("1234 ---> ", vectorize_layer.get_vocabulary()[1234])
 print('Vocabulary size: {}'.format(len(vectorize_layer.get_vocabulary())))
 ```
 
-    1234 --->  middle
+    1234 --->  none
     Vocabulary size: 10000
     
 
@@ -314,7 +317,7 @@ Als nächster Layer wird `GlobalAveragePooling1D` verwendet. Dieser reduziert di
 
 Anschließend folgt ein fully-connected 32 Dense-Layer. Hier wurde eine Dropoutrate festgelegt, um Overfitting zu verhindern. Das Ziel hier ist random ausgewählte Nodes auf 0 zu setzen, damit das anspassen der Weights der einzelnen Nodes beim Lernen gefördert wird.
 
-Letztendlich wird der letzte Layer mit einem Dense Layer zu einer einzigen Node verknüpft. Diese hat eine Range von 0 bis 1 und gibt das Ergenis aus.
+Letztendlich wird der letzte Layer mit einem Dense Layer zu einer einzigen Node verknüpft. Diese hat dank der Sigmoid-Aktivierungsfunktion ein Intervall von 0 bis 1 und gibt das Ergenis aus.
 
 Wir können nun noch mit `.summary()` das Modell verifizieren.
 
@@ -326,23 +329,23 @@ model = tf.keras.Sequential([
   layers.Embedding(max_features + 1, embedding_dim),
   layers.GlobalAveragePooling1D(),
   layers.Dropout(0.2),
-  layers.Dense(1)
+  layers.Dense(1, activation='sigmoid')
 ])
 
 model.summary()
 ```
 
-    Model: "sequential"
+    Model: "sequential_10"
     _________________________________________________________________
     Layer (type)                 Output Shape              Param #   
     =================================================================
-    embedding (Embedding)        (None, None, 32)          320032    
+    embedding_6 (Embedding)      (None, None, 32)          320032    
     _________________________________________________________________
-    global_average_pooling1d (Gl (None, 32)                0         
+    global_average_pooling1d_6 ( (None, 32)                0         
     _________________________________________________________________
-    dropout (Dropout)            (None, 32)                0         
+    dropout_7 (Dropout)          (None, 32)                0         
     _________________________________________________________________
-    dense (Dense)                (None, 1)                 33        
+    dense_7 (Dense)              (None, 1)                 33        
     =================================================================
     Total params: 320,065
     Trainable params: 320,065
@@ -350,15 +353,28 @@ model.summary()
     _________________________________________________________________
     
 
-Für das Trainieren müssen noch ein paar Parameter definiert werden. Für die Berechnung des Fehlers (loss) verwenden wir die `BinaryCrossentropy` Funktion. Der Fehler gibt uns an, wie weit wir von der richtigen Prediction weg sind. Wir haben uns dafür entschieden, da wir einen sogenannten Binary Classifier haben, der uns eine Wahrscheinlichkeit von 0 bis 1 als Ergebnis gibt. Dabei arbeiten wir mit Logits, sodass die Labels als sogennante Logits betrachtet werden. Diese Darstellung als Wahrscheinlichkeit verspricht laut Tensorflow größere numerische Stabilität.
+Für das Trainieren müssen noch ein paar Parameter definiert werden. Für die Berechnung des Fehlers (loss) verwenden wir die `BinaryCrossentropy` Funktion. Der Fehler gibt uns an, wie weit wir von der richtigen Prediction weg sind. Wir haben uns dafür entschieden, da wir einen sogenannten Binary Classifier haben, der uns eine Wahrscheinlichkeit von 0 bis 1 als Ergebnis gibt.
 
 Weiterhin verwenden wir für den Optimierungsalgorithmus den `Adam-Optimizer`. Wir haben uns für den Adam-Optimizer, im Vergleich zum klassischen Stochastic-Gradient-Descent-Algorithmus entschieden, da sich die Learningrate beim Adam-Optimizer mit der Zeit automatisch anpasst. Das ist besonders praktisch bei Natural-Language-Processing, da hier die Gradients in der Regel sehr gering sind. Dabei wird die Learningrate basierend auf der vorherigen Änderung der Weights angepasst. Hier haben wir eine sehr kleine Learningrate definiert, da wir ein sehr großes Datenset haben und nicht zu schnell in das Problem von Overfitting laufen wollen.
 
+Zusätzlich werden weitere Metriken wie True Positives, False Positives, True Negatives, False Negatives, Precision, Recall und AUC gemessen, um genauere Aussagen über die Genauigkeit des Modells zu treffen.
+
 
 ```python
-model.compile(loss=losses.BinaryCrossentropy(from_logits=True),
+metrics = [
+  tf.metrics.TruePositives(name='tp'),
+  tf.metrics.FalsePositives(name='fp'),
+  tf.metrics.TrueNegatives(name='tn'),
+  tf.metrics.FalseNegatives(name='fn'), 
+  tf.metrics.BinaryAccuracy(name='accuracy'),
+  tf.metrics.Precision(name='precision'),
+  tf.metrics.Recall(name='recall'),
+  tf.metrics.AUC(name='auc'),
+]
+
+model.compile(loss=losses.BinaryCrossentropy(),
               optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
-              metrics=tf.metrics.BinaryAccuracy(threshold=0.0))
+              metrics=metrics)
 ```
 
 Nun wird das Modell trainiert. Dafür definieren wir mit epochs, wie oft wir über das Trainingsdatenset iterieren. In `model.fit()` werden die Trainingsdaten, die Validationsdaten und die Anzahl der Epochen angegeben. Tensorflow loggt den Fortschritt live in der Konsole aus und zusätzlich wird der Trainingsstatus in einem History-Objekt festgehalten.
@@ -373,41 +389,122 @@ history = model.fit(
 ```
 
     Epoch 1/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.6862 - binary_accuracy: 0.5982 - val_loss: 0.6522 - val_binary_accuracy: 0.6898
+    3200/3200 [==============================] - 25s 7ms/step - loss: 0.6868 - tp: 215491.6279 - fp: 156274.7357 - tn: 99620.0953 - fn: 40933.4411 - accuracy: 0.5937 - precision: 0.5645 - recall: 0.8482 - auc: 0.6557 - val_loss: 0.6533 - val_tp: 96529.0000 - val_fp: 47284.0000 - val_tn: 80593.0000 - val_fn: 31594.0000 - val_accuracy: 0.6919 - val_precision: 0.6712 - val_recall: 0.7534 - val_auc: 0.7650
     Epoch 2/10
-    3200/3200 [==============================] - 19s 6ms/step - loss: 0.6385 - binary_accuracy: 0.6971 - val_loss: 0.5999 - val_binary_accuracy: 0.7179
+    3200/3200 [==============================] - 23s 7ms/step - loss: 0.6391 - tp: 193834.4577 - fp: 91490.2499 - tn: 164404.5811 - fn: 62590.6114 - accuracy: 0.6969 - precision: 0.6762 - recall: 0.7579 - auc: 0.7679 - val_loss: 0.6007 - val_tp: 96396.0000 - val_fp: 40351.0000 - val_tn: 87526.0000 - val_fn: 31727.0000 - val_accuracy: 0.7184 - val_precision: 0.7049 - val_recall: 0.7524 - val_auc: 0.7887
     Epoch 3/10
-    3200/3200 [==============================] - 19s 6ms/step - loss: 0.5894 - binary_accuracy: 0.7242 - val_loss: 0.5612 - val_binary_accuracy: 0.7406
+    3200/3200 [==============================] - 23s 7ms/step - loss: 0.5896 - tp: 194567.1565 - fp: 78599.9494 - tn: 177294.8816 - fn: 61857.9125 - accuracy: 0.7242 - precision: 0.7102 - recall: 0.7589 - auc: 0.7942 - val_loss: 0.5618 - val_tp: 97794.0000 - val_fp: 36046.0000 - val_tn: 91831.0000 - val_fn: 30329.0000 - val_accuracy: 0.7407 - val_precision: 0.7307 - val_recall: 0.7633 - val_auc: 0.8102
     Epoch 4/10
-    3200/3200 [==============================] - 19s 6ms/step - loss: 0.5536 - binary_accuracy: 0.7451 - val_loss: 0.5333 - val_binary_accuracy: 0.7555
+    3200/3200 [==============================] - 23s 7ms/step - loss: 0.5536 - tp: 197241.6973 - fp: 70565.5036 - tn: 185329.3274 - fn: 59183.3718 - accuracy: 0.7456 - precision: 0.7352 - recall: 0.7691 - auc: 0.8151 - val_loss: 0.5337 - val_tp: 99224.0000 - val_fp: 33575.0000 - val_tn: 94302.0000 - val_fn: 28899.0000 - val_accuracy: 0.7560 - val_precision: 0.7472 - val_recall: 0.7744 - val_auc: 0.8262
     Epoch 5/10
-    3200/3200 [==============================] - 19s 6ms/step - loss: 0.5279 - binary_accuracy: 0.7596 - val_loss: 0.5138 - val_binary_accuracy: 0.7662
+    3200/3200 [==============================] - 23s 7ms/step - loss: 0.5277 - tp: 199856.8247 - fp: 66004.4211 - tn: 189890.4099 - fn: 56568.2443 - accuracy: 0.7601 - precision: 0.7510 - recall: 0.7795 - auc: 0.8300 - val_loss: 0.5141 - val_tp: 100306.0000 - val_fp: 32091.0000 - val_tn: 95786.0000 - val_fn: 27817.0000 - val_accuracy: 0.7660 - val_precision: 0.7576 - val_recall: 0.7829 - val_auc: 0.8368
     Epoch 6/10
-    3200/3200 [==============================] - 19s 6ms/step - loss: 0.5100 - binary_accuracy: 0.7689 - val_loss: 0.5006 - val_binary_accuracy: 0.7726
+    3200/3200 [==============================] - 23s 7ms/step - loss: 0.5097 - tp: 201922.5876 - fp: 63573.4939 - tn: 192321.3371 - fn: 54502.4814 - accuracy: 0.7692 - precision: 0.7602 - recall: 0.7876 - auc: 0.8398 - val_loss: 0.5008 - val_tp: 101294.0000 - val_fp: 31342.0000 - val_tn: 96535.0000 - val_fn: 26829.0000 - val_accuracy: 0.7728 - val_precision: 0.7637 - val_recall: 0.7906 - val_auc: 0.8440
     Epoch 7/10
-    3200/3200 [==============================] - 20s 6ms/step - loss: 0.4978 - binary_accuracy: 0.7751 - val_loss: 0.4917 - val_binary_accuracy: 0.7766
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4976 - tp: 203485.2924 - fp: 62112.9759 - tn: 193781.8550 - fn: 52939.7766 - accuracy: 0.7751 - precision: 0.7658 - recall: 0.7936 - auc: 0.8464 - val_loss: 0.4919 - val_tp: 102042.0000 - val_fp: 31058.0000 - val_tn: 96819.0000 - val_fn: 26081.0000 - val_accuracy: 0.7768 - val_precision: 0.7667 - val_recall: 0.7964 - val_auc: 0.8489
     Epoch 8/10
-    3200/3200 [==============================] - 20s 6ms/step - loss: 0.4895 - binary_accuracy: 0.7796 - val_loss: 0.4857 - val_binary_accuracy: 0.7799
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4890 - tp: 204731.5595 - fp: 61172.2646 - tn: 194722.5664 - fn: 51693.5095 - accuracy: 0.7794 - precision: 0.7696 - recall: 0.7985 - auc: 0.8512 - val_loss: 0.4859 - val_tp: 102437.0000 - val_fp: 30638.0000 - val_tn: 97239.0000 - val_fn: 25686.0000 - val_accuracy: 0.7800 - val_precision: 0.7698 - val_recall: 0.7995 - val_auc: 0.8523
     Epoch 9/10
-    3200/3200 [==============================] - 19s 6ms/step - loss: 0.4836 - binary_accuracy: 0.7827 - val_loss: 0.4814 - val_binary_accuracy: 0.7827
+    3200/3200 [==============================] - 23s 7ms/step - loss: 0.4834 - tp: 205660.3533 - fp: 60526.2040 - tn: 195368.6270 - fn: 50764.7157 - accuracy: 0.7825 - precision: 0.7724 - recall: 0.8022 - auc: 0.8545 - val_loss: 0.4817 - val_tp: 102898.0000 - val_fp: 30550.0000 - val_tn: 97327.0000 - val_fn: 25225.0000 - val_accuracy: 0.7821 - val_precision: 0.7711 - val_recall: 0.8031 - val_auc: 0.8550
     Epoch 10/10
-    3200/3200 [==============================] - 19s 6ms/step - loss: 0.4794 - binary_accuracy: 0.7849 - val_loss: 0.4783 - val_binary_accuracy: 0.7843
+    3200/3200 [==============================] - 23s 7ms/step - loss: 0.4790 - tp: 206348.7791 - fp: 60025.1518 - tn: 195869.6792 - fn: 50076.2899 - accuracy: 0.7849 - precision: 0.7745 - recall: 0.8048 - auc: 0.8572 - val_loss: 0.4786 - val_tp: 103335.0000 - val_fp: 30599.0000 - val_tn: 97278.0000 - val_fn: 24788.0000 - val_accuracy: 0.7836 - val_precision: 0.7715 - val_recall: 0.8065 - val_auc: 0.8569
     
 
-Nachdem das Modell nur trainiert ist können wir es mit den vorher festgelegten Testdatensatz testen. Diese sollen wie bereits erwähnt echte Daten simulieren. Dabei erhalten wir mit `model.evaluate()` den Loss und die Accuracy, welche bei rund 80% liegt.
+Nachdem das Modell nur trainiert ist können wir es mit den vorher festgelegten Testdatensatz testen. Zuerst extrahieren wir noch die Features und Labels aus den Datasets, um mit ihnen arbeiten zu können.
 
 
 ```python
-loss, accuracy = model.evaluate(test_ds)
+train_features = np.concatenate([x for x, y in train_ds], axis=0)
+train_labels = np.concatenate([y for x, y in train_ds], axis=0)
 
-print("Loss: ", loss)
-print("Accuracy: ", accuracy)
+test_features = np.concatenate([x for x, y in test_ds], axis=0)
+test_labels = np.concatenate([y for x, y in test_ds], axis=0)
+
+train_predictions_baseline = model.predict(train_features, batch_size=batch_size)
+test_predictions_baseline = model.predict(test_features, batch_size=batch_size)
 ```
 
-    1000/1000 [==============================] - 3s 3ms/step - loss: 0.4788 - binary_accuracy: 0.7841
-    Loss:  0.4788129925727844
-    Accuracy:  0.7840874791145325
+Mit den vorher gemessenen Metriken kann nun die Genauigkeit mithilfe einer Confusion-Matrix bestimmt werden. Hier wird ein Threshold von 0.5 verwendet, um die Anzahl an falschen Predictions insgesamt zu reduzieren. Dabei hat das Modell eine Testaccuracy von 78.23%, während die Präzision bei 76.93% und der Recall bei 80.43% liegt. Die Präzision sagt hier aus, dass 76.93% aller positiv predicteten Tweets tatsächlich positiv waren. Der Recall sagt hier, dass 80.43% aller positiven Tweets korrekt klassifiziert wurden.
+
+Weiterhin beträgt die AUC 85.52% und da die Kurve über der Diagonale liegt ist das Modell besser als der Zufall.
+
+
+```python
+def plot_cm(labels, predictions, p=0.5):
+  cm = confusion_matrix(labels, predictions > p)
+  plt.figure(figsize=(5,5))
+  sns.heatmap(cm, annot=True, fmt="d")
+  plt.title('Confusion matrix @{:.2f}'.format(p))
+  plt.ylabel('Actual label')
+  plt.xlabel('Predicted label')
+
+  print('Negative Stimmung korrekt erkannt (True Negatives): ', cm[0][0])
+  print('Negative Stimmung falsch positiv erkannt (False Positives): ', cm[0][1])
+  print('Positive Stimmung falsch negativ erkannt (False Negatives): ', cm[1][0])
+  print('Positive Stimmung korrekt erkannt (True Positives): ', cm[1][1])
+
+baseline_results = model.evaluate(test_features, test_labels, batch_size=batch_size, verbose=0)
+
+for name, value in zip(model.metrics_names, baseline_results):
+  print(name, ': ', value)
+
+print()
+
+plot_cm(test_labels, test_predictions_baseline)
+```
+
+    loss :  0.48117759823799133
+    tp :  128422.0
+    fp :  38674.0
+    tn :  121894.0
+    fn :  31010.0
+    accuracy :  0.7822375297546387
+    precision :  0.7685521841049194
+    recall :  0.8054969906806946
+    auc :  0.855166494846344
     
+    Negative Stimmung korrekt erkannt (True Negatives):  122115
+    Negative Stimmung falsch positiv erkannt (False Positives):  38453
+    Positive Stimmung falsch negativ erkannt (False Negatives):  31202
+    Positive Stimmung korrekt erkannt (True Positives):  128230
+    
+
+
+    
+![png](output_41_1.png)
+    
+
+
+ROC beschreibt unterschiedliche Confusion Matrizen mit unterschiedlichen Thresholds von 0 bis 1.
+
+(0,0) besagt, alle positiven Tweets wurden korrekt predicted, alle negativen falsch
+
+(1,1) besagt, alle negativen Tweets wurden korrekt predicted, alle positiven falsch
+
+Wie bereits erwähnt beträgt die AUC 85.52% und da die Kurve über der Diagonale liegt ist das Modell besser als der Zufall, sowohl im Training, als auch im Test.
+
+
+```python
+def plot_roc(name, labels, predictions, **kwargs):
+  fp, tp, _ = sklearn.metrics.roc_curve(labels, predictions)
+
+  plt.plot(fp, tp, label=name, linewidth=2, **kwargs)
+  plt.xlabel('False positives [%]')
+  plt.ylabel('True positives [%]')
+  plt.grid(True)
+
+plot_roc("Train Baseline", train_labels, train_predictions_baseline, color='b')
+plot_roc("Test Baseline", test_labels, test_predictions_baseline, color='orange', linestyle='--')
+plt.plot([0, 1], linewidth=1, linestyle='--')
+plt.legend(loc='lower right')
+plt.show()
+```
+
+
+    
+![png](output_43_0.png)
+    
+
 
 In dem History-Objekt können wir nun sehen, welche Daten Tensorflow für uns aufgezeichnet hat.
 
@@ -420,7 +517,7 @@ history_dict.keys()
 
 
 
-    dict_keys(['loss', 'binary_accuracy', 'val_loss', 'val_binary_accuracy'])
+    dict_keys(['loss', 'tp', 'fp', 'accuracy', 'precision', 'recall', 'auc', 'val_loss', 'val_tp', 'val_fp', 'val_accuracy', 'val_precision', 'val_recall', 'val_auc'])
 
 
 
@@ -435,9 +532,7 @@ val_loss = history_dict['val_loss']
 
 epochs = range(1, len(loss) + 1)
 
-# "bo" is for "blue dot"
 plt.plot(epochs, loss, 'o', color='orange', label='Training Loss')
-# b is for "solid blue line"
 plt.plot(epochs, val_loss, 'blue', label='Validation Loss')
 plt.title('Trainings- und Validationsloss')
 plt.xlabel('Epochen')
@@ -449,7 +544,7 @@ plt.show()
 
 
     
-![png](output_43_0.png)
+![png](output_47_0.png)
     
 
 
@@ -459,8 +554,8 @@ An beiden Graphiken kann man jedoch gut erkennen, dass es zu keinem Overfitting 
 
 
 ```python
-acc = history_dict['binary_accuracy']
-val_acc = history_dict['val_binary_accuracy']
+acc = history_dict['accuracy']
+val_acc = history_dict['val_accuracy']
 
 plt.plot(epochs, acc, 'o', color='orange', label='Training Accuracy')
 plt.plot(epochs, val_acc, 'blue', label='Validation Accuracy')
@@ -474,7 +569,7 @@ plt.show()
 
 
     
-![png](output_45_0.png)
+![png](output_49_0.png)
     
 
 
@@ -484,8 +579,7 @@ Nun exportieren wir das fertige Modell. Da wir vorher die Texte vektorisiert hab
 ```python
 sentiment_model = tf.keras.Sequential([
   vectorize_layer,
-  model,
-  layers.Activation('sigmoid')
+  model
 ])
 ```
 
@@ -505,9 +599,9 @@ sentiment_model.predict(examples)
 
 
 
-    array([[0.8559035 ],
-           [0.53341323],
-           [0.44238377]], dtype=float32)
+    array([[0.8566072 ],
+           [0.53552496],
+           [0.43747696]], dtype=float32)
 
 
 
@@ -964,7 +1058,7 @@ plt.show()
 
 
     
-![png](output_56_0.png)
+![png](output_60_0.png)
     
 
 
@@ -1437,7 +1531,7 @@ plt.show()
 
 
     
-![png](output_73_0.png)
+![png](output_77_0.png)
     
 
 
@@ -1463,7 +1557,7 @@ plt.show();
 
 
     
-![png](output_76_0.png)
+![png](output_80_0.png)
     
 
 
@@ -1479,7 +1573,7 @@ plt.show();
 
 
     
-![png](output_77_0.png)
+![png](output_81_0.png)
     
 
 
@@ -1504,7 +1598,7 @@ plt.show();
 
 
     
-![png](output_79_0.png)
+![png](output_83_0.png)
     
 
 
@@ -1651,7 +1745,7 @@ plt.show()
 
 
     
-![png](output_94_0.png)
+![png](output_98_0.png)
     
 
 
@@ -1706,7 +1800,7 @@ plt.show()
 
 
     
-![png](output_98_0.png)
+![png](output_102_0.png)
     
 
 
@@ -1736,7 +1830,7 @@ plt.show()
 
 
     
-![png](output_100_0.png)
+![png](output_104_0.png)
     
 
 
@@ -1847,7 +1941,7 @@ plt.show()
 
 
     
-![png](output_105_0.png)
+![png](output_109_0.png)
     
 
 
