@@ -58,6 +58,7 @@ import string
 import tensorflow as tf
 import pandas as pd
 import seaborn as sns
+import numpy as np
 import sklearn
 
 from tensorflow.keras import layers
@@ -120,29 +121,29 @@ dataframe.head()
   </thead>
   <tbody>
     <tr>
-      <th>400821</th>
+      <th>792586</th>
       <td>0</td>
-      <td>@DebbieFletcher I'm not managed to vote more o...</td>
+      <td>school  but last day =D</td>
     </tr>
     <tr>
-      <th>716827</th>
+      <th>397018</th>
       <td>0</td>
-      <td>hmm.. 16gb iphone is not big enough</td>
+      <td>awe my laptop died  yay for blackberrys!</td>
     </tr>
     <tr>
-      <th>1350162</th>
-      <td>4</td>
-      <td>@gabesantos I concur. Hurry up and find my num...</td>
+      <th>124537</th>
+      <td>0</td>
+      <td>@BATMANNN awwwwwh  well, just try and forget a...</td>
     </tr>
     <tr>
-      <th>626421</th>
+      <th>712067</th>
       <td>0</td>
-      <td>@rockstarima OH NO!!!    How's the pizza?</td>
+      <td>just left Texas now in new Mexico here we com...</td>
     </tr>
     <tr>
-      <th>359780</th>
+      <th>734459</th>
       <td>0</td>
-      <td>got a horrible mermaid  damnit skye</td>
+      <td>@BabeNatasha and spanish and write up journals...</td>
     </tr>
   </tbody>
 </table>
@@ -199,11 +200,11 @@ for text_batch, label_batch in raw_train_ds.take(1):
     print("Label:", label_batch.numpy()[i])
 ```
 
-    Tweet: b'is it just me or the new chrome browser is really buggy and slow '
+    Tweet: b'@deannetheresa I hope things are okay, dear  xoxo'
     Label: 0
-    Tweet: b'It took days to type this  re: http://ff.im/3vMwf'
+    Tweet: b'drip drip drop little april showers '
     Label: 4
-    Tweet: b'@nadhiyamali now u plan to give me nightmares  i keep on adding people thinking, could be colleagues from other branches or journalists'
+    Tweet: b'@xxandip mine too  diversity HAS to win'
     Label: 4
     
 
@@ -264,11 +265,11 @@ print(label)
 print(vectorize_text(text, label))
 ```
 
-    tf.Tensor(b'is it just me or the new chrome browser is really buggy and slow ', shape=(), dtype=string)
+    tf.Tensor(b'@deannetheresa I hope things are okay, dear  xoxo', shape=(), dtype=string)
     tf.Tensor(0, shape=(), dtype=int64)
     (<tf.Tensor: shape=(1, 56), dtype=int64, numpy=
-    array([[   9,   12,   20,   18,   91,    4,   70, 5243, 4345,    9,   57,
-               1,    7,  931,    0,    0,    0,    0,    0,    0,    0,    0,
+    array([[   2,   88,  241,   30, 1166,  858, 1012,    0,    0,    0,    0,
+               0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -283,7 +284,7 @@ print("1234 ---> ", vectorize_layer.get_vocabulary()[1234])
 print('Vocabulary size: {}'.format(len(vectorize_layer.get_vocabulary())))
 ```
 
-    1234 --->  none
+    1234 --->  exciting
     Vocabulary size: 10000
     
 
@@ -309,8 +310,6 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 ```
 
-@troy
-
 Schließlich definieren wir das eigentliche Modell. Der erste Layer ist ein Embedding-Layer. Dieser sorgt dafür, dass jedes Wort einen eigenen Vektor erhält, welcher die Bedeutung des Wortes darstellt. Diese Vektoren werden mit dem Modell über die Zeit trainiert. Dieser Embedding-Layer fügt eine weitere Dimension zum Outputvektor hinzu. Hier definieren wir mit der embedding_dim die Größe der Layer, das bedeutet, dass es 32 Nodes pro Layer gibt.
 
 Als nächster Layer wird `GlobalAveragePooling1D` verwendet. Dieser reduziert die Dimension wieder um 1 und verrechnet dabei alle Informationen, sodass keine Informationen verloren gehen. Der Outputvektor wird dabei wieder auf eine feste Länge normalisiert.
@@ -335,23 +334,25 @@ model = tf.keras.Sequential([
 model.summary()
 ```
 
-    Model: "sequential_10"
+    Model: "sequential"
     _________________________________________________________________
     Layer (type)                 Output Shape              Param #   
     =================================================================
-    embedding_6 (Embedding)      (None, None, 32)          320032    
+    embedding (Embedding)        (None, None, 32)          320032    
     _________________________________________________________________
-    global_average_pooling1d_6 ( (None, 32)                0         
+    global_average_pooling1d (Gl (None, 32)                0         
     _________________________________________________________________
-    dropout_7 (Dropout)          (None, 32)                0         
+    dropout (Dropout)            (None, 32)                0         
     _________________________________________________________________
-    dense_7 (Dense)              (None, 1)                 33        
+    dense (Dense)                (None, 1)                 33        
     =================================================================
     Total params: 320,065
     Trainable params: 320,065
     Non-trainable params: 0
     _________________________________________________________________
     
+
+@troy
 
 Für das Trainieren müssen noch ein paar Parameter definiert werden. Für die Berechnung des Fehlers (loss) verwenden wir die `BinaryCrossentropy` Funktion. Der Fehler gibt uns an, wie weit wir von der richtigen Prediction weg sind. Wir haben uns dafür entschieden, da wir einen sogenannten Binary Classifier haben, der uns eine Wahrscheinlichkeit von 0 bis 1 als Ergebnis gibt.
 
@@ -389,28 +390,95 @@ history = model.fit(
 ```
 
     Epoch 1/10
-    3200/3200 [==============================] - 25s 7ms/step - loss: 0.6868 - tp: 215491.6279 - fp: 156274.7357 - tn: 99620.0953 - fn: 40933.4411 - accuracy: 0.5937 - precision: 0.5645 - recall: 0.8482 - auc: 0.6557 - val_loss: 0.6533 - val_tp: 96529.0000 - val_fp: 47284.0000 - val_tn: 80593.0000 - val_fn: 31594.0000 - val_accuracy: 0.6919 - val_precision: 0.6712 - val_recall: 0.7534 - val_auc: 0.7650
+    3200/3200 [==============================] - 26s 8ms/step - loss: 0.6871 - tp: 180734.9303 - fp: 121461.9322 - tn: 134729.6913 - fn: 75393.3461 - accuracy: 0.5933 - precision: 0.5835 - recall: 0.6284 - auc: 0.6328 - val_loss: 0.6545 - val_tp: 95829.0000 - val_fp: 46293.0000 - val_tn: 81647.0000 - val_fn: 32231.0000 - val_accuracy: 0.6933 - val_precision: 0.6743 - val_recall: 0.7483 - val_auc: 0.7653
     Epoch 2/10
-    3200/3200 [==============================] - 23s 7ms/step - loss: 0.6391 - tp: 193834.4577 - fp: 91490.2499 - tn: 164404.5811 - fn: 62590.6114 - accuracy: 0.6969 - precision: 0.6762 - recall: 0.7579 - auc: 0.7679 - val_loss: 0.6007 - val_tp: 96396.0000 - val_fp: 40351.0000 - val_tn: 87526.0000 - val_fn: 31727.0000 - val_accuracy: 0.7184 - val_precision: 0.7049 - val_recall: 0.7524 - val_auc: 0.7887
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.6411 - tp: 192549.5348 - fp: 91421.7704 - tn: 164769.8532 - fn: 63578.7416 - accuracy: 0.6946 - precision: 0.6746 - recall: 0.7528 - auc: 0.7650 - val_loss: 0.6017 - val_tp: 96193.0000 - val_fp: 40336.0000 - val_tn: 87604.0000 - val_fn: 31867.0000 - val_accuracy: 0.7180 - val_precision: 0.7046 - val_recall: 0.7512 - val_auc: 0.7885
     Epoch 3/10
-    3200/3200 [==============================] - 23s 7ms/step - loss: 0.5896 - tp: 194567.1565 - fp: 78599.9494 - tn: 177294.8816 - fn: 61857.9125 - accuracy: 0.7242 - precision: 0.7102 - recall: 0.7589 - auc: 0.7942 - val_loss: 0.5618 - val_tp: 97794.0000 - val_fp: 36046.0000 - val_tn: 91831.0000 - val_fn: 30329.0000 - val_accuracy: 0.7407 - val_precision: 0.7307 - val_recall: 0.7633 - val_auc: 0.8102
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.5921 - tp: 193566.6373 - fp: 78835.7038 - tn: 177355.9197 - fn: 62561.6392 - accuracy: 0.7216 - precision: 0.7078 - recall: 0.7553 - auc: 0.7917 - val_loss: 0.5621 - val_tp: 97859.0000 - val_fp: 36290.0000 - val_tn: 91650.0000 - val_fn: 30201.0000 - val_accuracy: 0.7403 - val_precision: 0.7295 - val_recall: 0.7642 - val_auc: 0.8107
     Epoch 4/10
-    3200/3200 [==============================] - 23s 7ms/step - loss: 0.5536 - tp: 197241.6973 - fp: 70565.5036 - tn: 185329.3274 - fn: 59183.3718 - accuracy: 0.7456 - precision: 0.7352 - recall: 0.7691 - auc: 0.8151 - val_loss: 0.5337 - val_tp: 99224.0000 - val_fp: 33575.0000 - val_tn: 94302.0000 - val_fn: 28899.0000 - val_accuracy: 0.7560 - val_precision: 0.7472 - val_recall: 0.7744 - val_auc: 0.8262
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.5560 - tp: 196481.2887 - fp: 70879.8044 - tn: 185311.8191 - fn: 59646.9878 - accuracy: 0.7436 - precision: 0.7331 - recall: 0.7667 - auc: 0.8130 - val_loss: 0.5334 - val_tp: 99374.0000 - val_fp: 33623.0000 - val_tn: 94317.0000 - val_fn: 28686.0000 - val_accuracy: 0.7566 - val_precision: 0.7472 - val_recall: 0.7760 - val_auc: 0.8273
     Epoch 5/10
-    3200/3200 [==============================] - 23s 7ms/step - loss: 0.5277 - tp: 199856.8247 - fp: 66004.4211 - tn: 189890.4099 - fn: 56568.2443 - accuracy: 0.7601 - precision: 0.7510 - recall: 0.7795 - auc: 0.8300 - val_loss: 0.5141 - val_tp: 100306.0000 - val_fp: 32091.0000 - val_tn: 95786.0000 - val_fn: 27817.0000 - val_accuracy: 0.7660 - val_precision: 0.7576 - val_recall: 0.7829 - val_auc: 0.8368
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.5298 - tp: 199162.4302 - fp: 66248.4030 - tn: 189943.2206 - fn: 56965.8463 - accuracy: 0.7583 - precision: 0.7492 - recall: 0.7771 - auc: 0.8283 - val_loss: 0.5133 - val_tp: 100748.0000 - val_fp: 32292.0000 - val_tn: 95648.0000 - val_fn: 27312.0000 - val_accuracy: 0.7672 - val_precision: 0.7573 - val_recall: 0.7867 - val_auc: 0.8383
     Epoch 6/10
-    3200/3200 [==============================] - 23s 7ms/step - loss: 0.5097 - tp: 201922.5876 - fp: 63573.4939 - tn: 192321.3371 - fn: 54502.4814 - accuracy: 0.7692 - precision: 0.7602 - recall: 0.7876 - auc: 0.8398 - val_loss: 0.5008 - val_tp: 101294.0000 - val_fp: 31342.0000 - val_tn: 96535.0000 - val_fn: 26829.0000 - val_accuracy: 0.7728 - val_precision: 0.7637 - val_recall: 0.7906 - val_auc: 0.8440
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.5117 - tp: 201209.7004 - fp: 63726.0312 - tn: 192465.5923 - fn: 54918.5761 - accuracy: 0.7675 - precision: 0.7586 - recall: 0.7851 - auc: 0.8383 - val_loss: 0.4997 - val_tp: 101708.0000 - val_fp: 31479.0000 - val_tn: 96461.0000 - val_fn: 26352.0000 - val_accuracy: 0.7741 - val_precision: 0.7636 - val_recall: 0.7942 - val_auc: 0.8455
     Epoch 7/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4976 - tp: 203485.2924 - fp: 62112.9759 - tn: 193781.8550 - fn: 52939.7766 - accuracy: 0.7751 - precision: 0.7658 - recall: 0.7936 - auc: 0.8464 - val_loss: 0.4919 - val_tp: 102042.0000 - val_fp: 31058.0000 - val_tn: 96819.0000 - val_fn: 26081.0000 - val_accuracy: 0.7768 - val_precision: 0.7667 - val_recall: 0.7964 - val_auc: 0.8489
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4992 - tp: 202901.5992 - fp: 62216.5726 - tn: 193975.0509 - fn: 53226.6773 - accuracy: 0.7739 - precision: 0.7646 - recall: 0.7919 - auc: 0.8452 - val_loss: 0.4905 - val_tp: 102467.0000 - val_fp: 31093.0000 - val_tn: 96847.0000 - val_fn: 25593.0000 - val_accuracy: 0.7786 - val_precision: 0.7672 - val_recall: 0.8001 - val_auc: 0.8505
     Epoch 8/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4890 - tp: 204731.5595 - fp: 61172.2646 - tn: 194722.5664 - fn: 51693.5095 - accuracy: 0.7794 - precision: 0.7696 - recall: 0.7985 - auc: 0.8512 - val_loss: 0.4859 - val_tp: 102437.0000 - val_fp: 30638.0000 - val_tn: 97239.0000 - val_fn: 25686.0000 - val_accuracy: 0.7800 - val_precision: 0.7698 - val_recall: 0.7995 - val_auc: 0.8523
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4907 - tp: 204168.8301 - fp: 61264.5039 - tn: 194927.1197 - fn: 51959.4464 - accuracy: 0.7784 - precision: 0.7687 - recall: 0.7968 - auc: 0.8500 - val_loss: 0.4844 - val_tp: 103029.0000 - val_fp: 30814.0000 - val_tn: 97126.0000 - val_fn: 25031.0000 - val_accuracy: 0.7819 - val_precision: 0.7698 - val_recall: 0.8045 - val_auc: 0.8540
     Epoch 9/10
-    3200/3200 [==============================] - 23s 7ms/step - loss: 0.4834 - tp: 205660.3533 - fp: 60526.2040 - tn: 195368.6270 - fn: 50764.7157 - accuracy: 0.7825 - precision: 0.7724 - recall: 0.8022 - auc: 0.8545 - val_loss: 0.4817 - val_tp: 102898.0000 - val_fp: 30550.0000 - val_tn: 97327.0000 - val_fn: 25225.0000 - val_accuracy: 0.7821 - val_precision: 0.7711 - val_recall: 0.8031 - val_auc: 0.8550
+    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4847 - tp: 205115.1156 - fp: 60590.2127 - tn: 195601.4108 - fn: 51013.1609 - accuracy: 0.7817 - precision: 0.7715 - recall: 0.8006 - auc: 0.8536 - val_loss: 0.4801 - val_tp: 103409.0000 - val_fp: 30510.0000 - val_tn: 97430.0000 - val_fn: 24651.0000 - val_accuracy: 0.7845 - val_precision: 0.7722 - val_recall: 0.8075 - val_auc: 0.8566
     Epoch 10/10
-    3200/3200 [==============================] - 23s 7ms/step - loss: 0.4790 - tp: 206348.7791 - fp: 60025.1518 - tn: 195869.6792 - fn: 50076.2899 - accuracy: 0.7849 - precision: 0.7745 - recall: 0.8048 - auc: 0.8572 - val_loss: 0.4786 - val_tp: 103335.0000 - val_fp: 30599.0000 - val_tn: 97278.0000 - val_fn: 24788.0000 - val_accuracy: 0.7836 - val_precision: 0.7715 - val_recall: 0.8065 - val_auc: 0.8569
+    3200/3200 [==============================] - 23s 7ms/step - loss: 0.4805 - tp: 205772.1649 - fp: 60158.3780 - tn: 196033.2455 - fn: 50356.1115 - accuracy: 0.7838 - precision: 0.7734 - recall: 0.8033 - auc: 0.8562 - val_loss: 0.4769 - val_tp: 103712.0000 - val_fp: 30384.0000 - val_tn: 97556.0000 - val_fn: 24348.0000 - val_accuracy: 0.7862 - val_precision: 0.7734 - val_recall: 0.8099 - val_auc: 0.8586
     
 
-Nachdem das Modell nur trainiert ist können wir es mit den vorher festgelegten Testdatensatz testen. Zuerst extrahieren wir noch die Features und Labels aus den Datasets, um mit ihnen arbeiten zu können.
+In dem History-Objekt können wir nun sehen, welche Daten Tensorflow für uns aufgezeichnet hat.
+
+
+```python
+history_dict = history.history
+history_dict.keys()
+```
+
+
+
+
+    dict_keys(['loss', 'tp', 'fp', 'tn', 'fn', 'accuracy', 'precision', 'recall', 'auc', 'val_loss', 'val_tp', 'val_fp', 'val_tn', 'val_fn', 'val_accuracy', 'val_precision', 'val_recall', 'val_auc'])
+
+
+
+Mithilfe von Matplotlib können wir den Loss plotten und beobachten, wie sich diese während des Lernens verhalten hat. Optimalerweise sollte diese mit der Zeit sinken, da mit dem Anpassen der Weights das Modell immer genauere Aussagen treffen sollte und somit auch der Fehler immer geringer werden sollte.
+
+Wir können erkennen, dass dies tatsächlich der Fall ist. Der Loss fällt fast exponentiell. Logischerweise wird der Trainingsloss immer geringer. Als Bestätigung für die Verbesserung des Modells dient hier der Validationloss. Dieser ist fast gleich, sodass wir davon ausgehen können, dass die Anzahl der Fehlinterpretierungen tatsächlich geringer wurde.
+
+
+```python
+loss = history_dict['loss']
+val_loss = history_dict['val_loss']
+
+epochs = range(1, len(loss) + 1)
+
+plt.plot(epochs, loss, 'o', color='orange', label='Training Loss')
+plt.plot(epochs, val_loss, 'blue', label='Validation Loss')
+plt.title('Trainings- und Validationsloss')
+plt.xlabel('Epochen')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.show()
+```
+
+
+    
+![png](output_41_0.png)
+    
+
+
+Das Gleiche können wir auch für die Accuracy durchführen. Hier sollte im Optimalfall die Accuracy mit der Zeit steigen. Dieses Verhalten können wir wieder an unserem Modell erkennen. Hier erinnert der Graph an eine Sättigungskurve. Dies liegt daran, dass das Lernen letztendlich eine Optimierung ist und es mit der Zeit immer schwerer wird, das Modell noch mehr zu verbessern.
+
+An beiden Graphiken kann man jedoch gut erkennen, dass es zu keinem Overfitting kommt. Wenn wir die Accuracy betrachten, würde bei Overfitting die Accuracy der Testdaten weiter ansteigen, während die Accuracy der Validationsdaten und die der Testdaten stagniert oder gar sinken. Das Gleiche würde analog mit dem Loss passieren.
+
+
+```python
+acc = history_dict['accuracy']
+val_acc = history_dict['val_accuracy']
+
+plt.plot(epochs, acc, 'o', color='orange', label='Training Accuracy')
+plt.plot(epochs, val_acc, 'blue', label='Validation Accuracy')
+plt.title('Trainings- und Validationsaccuracy')
+plt.xlabel('Epochen')
+plt.ylabel('Accuracy')
+plt.legend(loc='lower right')
+
+plt.show()
+```
+
+
+    
+![png](output_43_0.png)
+    
+
+
+Nachdem das Modell nun erfolgreich trainiert wurde können wir es mit den vorher festgelegten Testdatensatz testen. Zuerst extrahieren wir noch die Features und Labels aus den Datasets, um mit ihnen arbeiten zu können.
 
 
 ```python
@@ -453,29 +521,29 @@ print()
 plot_cm(test_labels, test_predictions_baseline)
 ```
 
-    loss :  0.48117759823799133
-    tp :  128422.0
-    fp :  38674.0
-    tn :  121894.0
-    fn :  31010.0
-    accuracy :  0.7822375297546387
-    precision :  0.7685521841049194
-    recall :  0.8054969906806946
-    auc :  0.855166494846344
+    loss :  0.4790298342704773
+    tp :  129218.0
+    fp :  38367.0
+    tn :  121516.0
+    fn :  30899.0
+    accuracy :  0.7835437655448914
+    precision :  0.7710594534873962
+    recall :  0.8070223927497864
+    auc :  0.8568227887153625
     
-    Negative Stimmung korrekt erkannt (True Negatives):  122115
-    Negative Stimmung falsch positiv erkannt (False Positives):  38453
-    Positive Stimmung falsch negativ erkannt (False Negatives):  31202
-    Positive Stimmung korrekt erkannt (True Positives):  128230
-    
-
-
-    
-![png](output_41_1.png)
+    Negative Stimmung korrekt erkannt (True Negatives):  121516
+    Negative Stimmung falsch positiv erkannt (False Positives):  38367
+    Positive Stimmung falsch negativ erkannt (False Negatives):  30899
+    Positive Stimmung korrekt erkannt (True Positives):  129218
     
 
 
-ROC beschreibt unterschiedliche Confusion Matrizen mit unterschiedlichen Thresholds von 0 bis 1.
+    
+![png](output_47_1.png)
+    
+
+
+Die ROC-Kurve beschreibt hier Confusion Matrizen mit unterschiedlichen Thresholds von 0 bis 1. Dabei wird insbesondere das Verhältnis zwischen True Positives und False Positives betrachtet.
 
 (0,0) besagt, alle positiven Tweets wurden korrekt predicted, alle negativen falsch
 
@@ -493,77 +561,10 @@ def plot_roc(name, labels, predictions, **kwargs):
   plt.ylabel('True positives [%]')
   plt.grid(True)
 
-plot_roc("Train Baseline", train_labels, train_predictions_baseline, color='b')
-plot_roc("Test Baseline", test_labels, test_predictions_baseline, color='orange', linestyle='--')
+plot_roc("Train", train_labels, train_predictions_baseline, color='b')
+plot_roc("Test", test_labels, test_predictions_baseline, color='orange', linestyle='--')
 plt.plot([0, 1], linewidth=1, linestyle='--')
 plt.legend(loc='lower right')
-plt.show()
-```
-
-
-    
-![png](output_43_0.png)
-    
-
-
-In dem History-Objekt können wir nun sehen, welche Daten Tensorflow für uns aufgezeichnet hat.
-
-
-```python
-history_dict = history.history
-history_dict.keys()
-```
-
-
-
-
-    dict_keys(['loss', 'tp', 'fp', 'accuracy', 'precision', 'recall', 'auc', 'val_loss', 'val_tp', 'val_fp', 'val_accuracy', 'val_precision', 'val_recall', 'val_auc'])
-
-
-
-Mithilfe von Matplotlib können wir den Loss plotten und beobachten, wie sich diese während des Lernens verhalten hat. Optimalerweise sollte diese mit der Zeit sinken, da mit dem Anpassen der Weights das Modell immer genauere Aussagen treffen sollte und somit auch der Fehler immer geringer werden sollte.
-
-Wir können erkennen, dass dies tatsächlich der Fall ist. Der Loss fällt fast exponentiell. Logischerweise wird der Trainingsloss immer geringer. Als Bestätigung für die Verbesserung des Modells dient hier der Validationloss. Dieser ist fast gleich, sodass wir davon ausgehen können, dass die Anzahl der Fehlinterpretierungen tatsächlich geringer wurde.
-
-
-```python
-loss = history_dict['loss']
-val_loss = history_dict['val_loss']
-
-epochs = range(1, len(loss) + 1)
-
-plt.plot(epochs, loss, 'o', color='orange', label='Training Loss')
-plt.plot(epochs, val_loss, 'blue', label='Validation Loss')
-plt.title('Trainings- und Validationsloss')
-plt.xlabel('Epochen')
-plt.ylabel('Loss')
-plt.legend()
-
-plt.show()
-```
-
-
-    
-![png](output_47_0.png)
-    
-
-
-Das Gleiche können wir auch für die Accuracy durchführen. Hier sollte im Optimalfall die Accuracy mit der Zeit steigen. Dieses Verhalten können wir wieder an unserem Modell erkennen. Hier erinnert der Graph an eine Sättigungskurve. Dies liegt daran, dass das Lernen letztendlich eine Optimierung ist und es mit der Zeit immer schwerer wird, das Modell noch mehr zu verbessern.
-
-An beiden Graphiken kann man jedoch gut erkennen, dass es zu keinem Overfitting kommt. Wenn wir die Accuracy betrachten, würde bei Overfitting die Accuracy der Testdaten weiter ansteigen, während die Accuracy der Validationsdaten und die der Testdaten stagniert oder gar sinken. Das Gleiche würde analog mit dem Loss passieren.
-
-
-```python
-acc = history_dict['accuracy']
-val_acc = history_dict['val_accuracy']
-
-plt.plot(epochs, acc, 'o', color='orange', label='Training Accuracy')
-plt.plot(epochs, val_acc, 'blue', label='Validation Accuracy')
-plt.title('Trainings- und Validationsaccuracy')
-plt.xlabel('Epochen')
-plt.ylabel('Accuracy')
-plt.legend(loc='lower right')
-
 plt.show()
 ```
 
@@ -599,9 +600,9 @@ sentiment_model.predict(examples)
 
 
 
-    array([[0.8566072 ],
-           [0.53552496],
-           [0.43747696]], dtype=float32)
+    array([[0.8538385 ],
+           [0.52383393],
+           [0.45286494]], dtype=float32)
 
 
 
@@ -617,7 +618,6 @@ Die Daten zum Trainieren des Modelles werden von Yahoo abgefragt. Bei diesen Dat
 
 
 ```python
-import numpy as np
 import pandas_datareader.data as pdr
 
 from sklearn.preprocessing import MinMaxScaler
@@ -751,15 +751,6 @@ df
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-04-07</th>
-      <td>2091.516357</td>
-      <td>1959.079468</td>
-      <td>1969.133179</td>
-      <td>2088.573730</td>
-      <td>2.531296e+10</td>
-      <td>2088.573730</td>
-    </tr>
-    <tr>
       <th>2021-04-08</th>
       <td>2102.873779</td>
       <td>2055.163330</td>
@@ -787,17 +778,26 @@ df
       <td>2157.656982</td>
     </tr>
     <tr>
-      <th>2021-04-12</th>
-      <td>2197.135010</td>
-      <td>2127.327637</td>
-      <td>2154.569824</td>
-      <td>2146.914795</td>
-      <td>2.070091e+10</td>
-      <td>2146.914795</td>
+      <th>2021-04-11</th>
+      <td>2199.718750</td>
+      <td>2110.368896</td>
+      <td>2157.361816</td>
+      <td>2139.353271</td>
+      <td>2.172794e+10</td>
+      <td>2139.353271</td>
+    </tr>
+    <tr>
+      <th>2021-04-13</th>
+      <td>2268.446777</td>
+      <td>2139.883789</td>
+      <td>2199.374512</td>
+      <td>2265.558594</td>
+      <td>2.497226e+10</td>
+      <td>2265.558594</td>
     </tr>
   </tbody>
 </table>
-<p>2072 rows × 6 columns</p>
+<p>2073 rows × 6 columns</p>
 </div>
 
 
@@ -964,27 +964,13 @@ df
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-04-07</th>
-      <td>2088.573730</td>
-      <td>1929.440517</td>
-      <td>4.222327</td>
-      <td>21.676683</td>
-      <td>61.838740</td>
-      <td>60.071002</td>
-      <td>45.0</td>
-      <td>1869.117334</td>
-      <td>7</td>
-      <td>2</td>
-      <td>4</td>
-    </tr>
-    <tr>
       <th>2021-04-08</th>
       <td>2072.108887</td>
-      <td>1937.544057</td>
-      <td>4.078237</td>
-      <td>13.871849</td>
-      <td>60.840802</td>
-      <td>59.096261</td>
+      <td>1991.376608</td>
+      <td>4.081519</td>
+      <td>22.511697</td>
+      <td>60.937251</td>
+      <td>59.999725</td>
       <td>45.0</td>
       <td>1882.091046</td>
       <td>8</td>
@@ -994,11 +980,11 @@ df
     <tr>
       <th>2021-04-09</th>
       <td>2135.942139</td>
-      <td>1948.373238</td>
-      <td>4.168079</td>
-      <td>26.285784</td>
-      <td>62.926516</td>
-      <td>61.691591</td>
+      <td>1999.267442</td>
+      <td>4.168943</td>
+      <td>17.379778</td>
+      <td>62.985439</td>
+      <td>62.776708</td>
       <td>45.0</td>
       <td>1899.477301</td>
       <td>9</td>
@@ -1008,11 +994,11 @@ df
     <tr>
       <th>2021-04-10</th>
       <td>2157.656982</td>
-      <td>1957.760501</td>
-      <td>4.246078</td>
+      <td>2006.371884</td>
+      <td>4.245169</td>
       <td>16.880694</td>
-      <td>64.873936</td>
-      <td>62.561830</td>
+      <td>64.903268</td>
+      <td>63.699943</td>
       <td>90.0</td>
       <td>1922.793451</td>
       <td>10</td>
@@ -1020,22 +1006,36 @@ df
       <td>4</td>
     </tr>
     <tr>
-      <th>2021-04-12</th>
-      <td>2146.914795</td>
-      <td>1958.643687</td>
-      <td>4.178794</td>
-      <td>11.913952</td>
-      <td>64.784705</td>
-      <td>61.813746</td>
+      <th>2021-04-11</th>
+      <td>2139.353271</td>
+      <td>2006.995302</td>
+      <td>4.145305</td>
+      <td>11.519786</td>
+      <td>64.347786</td>
+      <td>62.297343</td>
       <td>90.0</td>
-      <td>1946.206683</td>
-      <td>12</td>
-      <td>0</td>
+      <td>1945.828607</td>
+      <td>11</td>
+      <td>6</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2021-04-13</th>
+      <td>2265.558594</td>
+      <td>2030.576832</td>
+      <td>4.513208</td>
+      <td>14.579736</td>
+      <td>70.376352</td>
+      <td>67.595484</td>
+      <td>95.0</td>
+      <td>1979.435864</td>
+      <td>13</td>
+      <td>1</td>
       <td>4</td>
     </tr>
   </tbody>
 </table>
-<p>2053 rows × 11 columns</p>
+<p>2054 rows × 11 columns</p>
 </div>
 
 
@@ -1077,8 +1077,8 @@ print(X_data.shape)
 print(y_data.shape)
 ```
 
-    (2053, 11)
-    (2053, 1)
+    (2054, 11)
+    (2054, 1)
     
 
 ### Transformation der Daten
@@ -1149,70 +1149,70 @@ X_scaled_data
   <tbody>
     <tr>
       <th>2015-08-25</th>
-      <td>0.000336</td>
-      <td>0.000428</td>
+      <td>0.000320</td>
+      <td>0.000413</td>
       <td>0.087378</td>
       <td>0.076386</td>
       <td>0.333897</td>
       <td>0.257724</td>
       <td>0.447368</td>
-      <td>0.000397</td>
+      <td>0.000390</td>
       <td>0.800000</td>
       <td>0.166667</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-26</th>
-      <td>0.000330</td>
-      <td>0.000427</td>
+      <td>0.000315</td>
+      <td>0.000412</td>
       <td>0.089021</td>
       <td>0.097446</td>
       <td>0.333924</td>
       <td>0.254459</td>
       <td>0.631579</td>
-      <td>0.000355</td>
+      <td>0.000349</td>
       <td>0.833333</td>
       <td>0.333333</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-27</th>
-      <td>0.000351</td>
-      <td>0.000425</td>
+      <td>0.000334</td>
+      <td>0.000410</td>
       <td>0.101965</td>
       <td>0.135497</td>
       <td>0.333973</td>
       <td>0.276440</td>
       <td>0.631579</td>
-      <td>0.000366</td>
+      <td>0.000360</td>
       <td>0.866667</td>
       <td>0.500000</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-28</th>
-      <td>0.000347</td>
-      <td>0.000422</td>
+      <td>0.000330</td>
+      <td>0.000407</td>
       <td>0.114915</td>
       <td>0.239393</td>
       <td>0.334021</td>
       <td>0.273698</td>
       <td>0.605263</td>
-      <td>0.000378</td>
+      <td>0.000372</td>
       <td>0.900000</td>
       <td>0.666667</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-29</th>
-      <td>0.000410</td>
-      <td>0.000420</td>
+      <td>0.000390</td>
+      <td>0.000406</td>
       <td>0.152030</td>
       <td>0.347686</td>
       <td>0.334117</td>
       <td>0.344430</td>
       <td>0.578947</td>
-      <td>0.000394</td>
+      <td>0.000388</td>
       <td>0.933333</td>
       <td>0.833333</td>
       <td>0.636364</td>
@@ -1232,78 +1232,78 @@ X_scaled_data
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-04-07</th>
-      <td>0.967976</td>
-      <td>0.985086</td>
-      <td>0.514079</td>
-      <td>0.349158</td>
-      <td>0.699510</td>
-      <td>0.570588</td>
-      <td>0.736842</td>
-      <td>0.960378</td>
-      <td>0.200000</td>
-      <td>0.333333</td>
-      <td>0.272727</td>
-    </tr>
-    <tr>
       <th>2021-04-08</th>
-      <td>0.960343</td>
-      <td>0.989224</td>
-      <td>0.510599</td>
-      <td>0.312588</td>
-      <td>0.693626</td>
-      <td>0.558056</td>
+      <td>0.914596</td>
+      <td>0.980690</td>
+      <td>0.510678</td>
+      <td>0.353071</td>
+      <td>0.694194</td>
+      <td>0.569672</td>
       <td>0.736842</td>
-      <td>0.967046</td>
+      <td>0.950808</td>
       <td>0.233333</td>
       <td>0.500000</td>
       <td>0.272727</td>
     </tr>
     <tr>
       <th>2021-04-09</th>
-      <td>0.989934</td>
-      <td>0.994755</td>
-      <td>0.512769</td>
-      <td>0.370754</td>
-      <td>0.705924</td>
-      <td>0.591425</td>
+      <td>0.942777</td>
+      <td>0.984577</td>
+      <td>0.512790</td>
+      <td>0.329025</td>
+      <td>0.706271</td>
+      <td>0.605376</td>
       <td>0.736842</td>
-      <td>0.975982</td>
+      <td>0.959594</td>
       <td>0.266667</td>
       <td>0.666667</td>
       <td>0.272727</td>
     </tr>
     <tr>
       <th>2021-04-10</th>
-      <td>1.000000</td>
-      <td>0.999549</td>
-      <td>0.514652</td>
+      <td>0.952364</td>
+      <td>0.988076</td>
+      <td>0.514631</td>
       <td>0.326686</td>
-      <td>0.717407</td>
-      <td>0.602614</td>
+      <td>0.717580</td>
+      <td>0.617247</td>
       <td>0.973684</td>
-      <td>0.987966</td>
+      <td>0.971376</td>
       <td>0.300000</td>
       <td>0.833333</td>
       <td>0.272727</td>
     </tr>
     <tr>
-      <th>2021-04-12</th>
-      <td>0.995020</td>
-      <td>1.000000</td>
-      <td>0.513027</td>
-      <td>0.303415</td>
-      <td>0.716881</td>
-      <td>0.592995</td>
+      <th>2021-04-11</th>
+      <td>0.944283</td>
+      <td>0.988384</td>
+      <td>0.512219</td>
+      <td>0.301568</td>
+      <td>0.714305</td>
+      <td>0.599213</td>
       <td>0.973684</td>
+      <td>0.983017</td>
+      <td>0.333333</td>
       <td>1.000000</td>
-      <td>0.366667</td>
-      <td>0.000000</td>
+      <td>0.272727</td>
+    </tr>
+    <tr>
+      <th>2021-04-13</th>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>0.521104</td>
+      <td>0.315905</td>
+      <td>0.749852</td>
+      <td>0.667333</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>0.400000</td>
+      <td>0.166667</td>
       <td>0.272727</td>
     </tr>
   </tbody>
 </table>
-<p>2053 rows × 11 columns</p>
+<p>2054 rows × 11 columns</p>
 </div>
 
 
@@ -1368,7 +1368,7 @@ X_train_random.shape
 
 
 
-    (1818, 31, 11)
+    (1819, 31, 11)
 
 
 
@@ -1401,15 +1401,15 @@ model.add(layers.Dense(units = 1))
 model.summary()
 ```
 
-    Model: "sequential_2"
+    Model: "sequential_4"
     _________________________________________________________________
     Layer (type)                 Output Shape              Param #   
     =================================================================
-    lstm (LSTM)                  (None, 15)                1620      
+    lstm_2 (LSTM)                (None, 15)                1620      
     _________________________________________________________________
-    dropout_1 (Dropout)          (None, 15)                0         
+    dropout_3 (Dropout)          (None, 15)                0         
     _________________________________________________________________
-    dense_1 (Dense)              (None, 1)                 16        
+    dense_3 (Dense)              (None, 1)                 16        
     =================================================================
     Total params: 1,636
     Trainable params: 1,636
@@ -1436,65 +1436,65 @@ history = model.fit(
 ```
 
     Epoch 1/30
-    52/52 [==============================] - 2s 15ms/step - loss: 0.1119 - val_loss: 0.0100
+    52/52 [==============================] - 2s 15ms/step - loss: 0.0766 - val_loss: 0.0119
     Epoch 2/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0182 - val_loss: 0.0036
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0201 - val_loss: 0.0038
     Epoch 3/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0096 - val_loss: 0.0024
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0105 - val_loss: 0.0022
     Epoch 4/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0072 - val_loss: 0.0017
+    52/52 [==============================] - 1s 10ms/step - loss: 0.0087 - val_loss: 0.0014
     Epoch 5/30
-    52/52 [==============================] - 0s 10ms/step - loss: 0.0060 - val_loss: 0.0016
+    52/52 [==============================] - 0s 9ms/step - loss: 0.0063 - val_loss: 0.0011
     Epoch 6/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0049 - val_loss: 0.0015
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0053 - val_loss: 8.5012e-04
     Epoch 7/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0053 - val_loss: 0.0012
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0056 - val_loss: 7.3449e-04
     Epoch 8/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0038 - val_loss: 0.0011
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0035 - val_loss: 7.8060e-04
     Epoch 9/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0033 - val_loss: 0.0011
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0034 - val_loss: 6.6498e-04
     Epoch 10/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0033 - val_loss: 0.0011
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0030 - val_loss: 4.8950e-04
     Epoch 11/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0031 - val_loss: 8.9440e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0029 - val_loss: 5.5658e-04
     Epoch 12/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0028 - val_loss: 8.2077e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0023 - val_loss: 5.7148e-04
     Epoch 13/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0026 - val_loss: 8.8024e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0036 - val_loss: 4.7864e-04
     Epoch 14/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0023 - val_loss: 8.4995e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0023 - val_loss: 3.2884e-04
     Epoch 15/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0033 - val_loss: 8.7410e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0029 - val_loss: 3.8314e-04
     Epoch 16/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0025 - val_loss: 7.9621e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0022 - val_loss: 3.9532e-04
     Epoch 17/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0023 - val_loss: 7.2030e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0021 - val_loss: 3.9324e-04
     Epoch 18/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0024 - val_loss: 6.8935e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0019 - val_loss: 4.1153e-04
     Epoch 19/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0021 - val_loss: 7.6832e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0020 - val_loss: 3.2188e-04
     Epoch 20/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0021 - val_loss: 7.6144e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0020 - val_loss: 4.9009e-04
     Epoch 21/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0022 - val_loss: 6.9209e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0020 - val_loss: 3.6681e-04
     Epoch 22/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0020 - val_loss: 6.1634e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0018 - val_loss: 5.0682e-04
     Epoch 23/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0024 - val_loss: 5.4894e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 3.8934e-04
     Epoch 24/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0021 - val_loss: 5.6053e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 4.5951e-04
     Epoch 25/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0019 - val_loss: 7.0258e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0014 - val_loss: 3.5801e-04
     Epoch 26/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0014 - val_loss: 6.7917e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0013 - val_loss: 4.4426e-04
     Epoch 27/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 6.0671e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0019 - val_loss: 3.2878e-04
     Epoch 28/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 6.2589e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0013 - val_loss: 2.5702e-04
     Epoch 29/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0018 - val_loss: 6.2334e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 4.1342e-04
     Epoch 30/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 5.3012e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0013 - val_loss: 3.1057e-04
     
 
 Die loss-Rate sollte bei einem Modell immer so gering wie nur möglich sein. In dem folgendem Diagramm ist gut zu sehen, dass die loss-Rate in den ersten Epochen noch relativ hoch war und sich dann immer mehr einer Zahl nahe 0,0015 angegelichen hat. Die Rate wurde dann auch ziemlich konstant über die restlichen Epochen gehalten. 
@@ -1663,7 +1663,7 @@ for tweet in tweets:
     create_dates.append(epoch_time)
 ```
 
-    {'text': 'Bitcoin bulls hate to discuss the flaws of bitcoin. \n\nCryptocurrencies are the future of money. Bitcoin is not. \n\nRead my recent article, which explains how Bitcoin will be replaced by better cryptocurrencies, specifically with a cryptocurrency board.\nhttps://t.co/E5cc5MRAit', 'public_metrics': {'retweet_count': 74, 'reply_count': 659, 'like_count': 309, 'quote_count': 111}, 'created_at': '2021-04-12T00:09:10.000Z', 'id': '1381398954538045443'}
+    {'text': 'When #Nvidia gamer customers complained in Feb over GPU supply shortage due to #CryptoMining they announced production &amp; sale of #Cryptocurrency #Eth Mining Processors - &amp; now estimate $150M in rev for its #crypto product!\n\n#eTorox\nhttps://t.co/w7XebmHu6l\nhttps://t.co/9rsWLCFFhr', 'id': '1381950294372798467', 'public_metrics': {'retweet_count': 0, 'reply_count': 0, 'like_count': 1, 'quote_count': 0}, 'created_at': '2021-04-13T12:40:00.000Z'}
     
 
 Hier übergeben wir unseren Sentimentmodel den Batch an gefetchten Tweets. Dannach formatieren wir noch das Sentiment, sodass es von -1 bis 1 geht. Somit kann man besser unterscheiden, ob Tweets negativ oder positiv gemeint sind.
@@ -1684,24 +1684,21 @@ for i in range(5):
     print("{} - {} - {}".format(d,t,p))
 ```
 
-    1618186150.0 - Bitcoin bulls hate to discuss the flaws of bitcoin. 
+    1618317600.0 - When #Nvidia gamer customers complained in Feb over GPU supply shortage due to #CryptoMining they announced production &amp; sale of #Cryptocurrency #Eth Mining Processors - &amp; now estimate $150M in rev for its #crypto product!
     
-    Cryptocurrencies are the future of money. Bitcoin is not. 
+    #eTorox
+    https://t.co/w7XebmHu6l
+    https://t.co/9rsWLCFFhr - 0.015010833740234375
+    1618317900.0 - Today's newsletter is out: A.J. Hinch gets easy redemption, the A's president talks about paying players in cryptocurrency, Bill James and Jon Heyman are both full of shit, and West Virginia wants to pay you to move there.  https://t.co/QtanjfqbjI - -0.1930304765701294
+    1618318055.0 - It's not every day I get to talk to one of crypto's leading news publications @Cointelegraph in an interview, but when I do, I talk markets!
     
-    Read my recent article, which explains how Bitcoin will be replaced by better cryptocurrencies, specifically with a cryptocurrency board.
-    https://t.co/E5cc5MRAit - -0.05254906415939331
-    1618187341.0 - The global cryptocurrency market is now worth over $2 trillion.
+    Find out my thoughts on the $ETH, $XRP controversies, alt season, and my price predictions in this new blog post!
     
-    Bitcoin - $1 trillion
-    Ethereum - $242 billion
-    Binance Coin - $72 billion
-    XRP - $58 billion
-    Tether - $44 billion https://t.co/lqSd1KhSGi - 0.9182758331298828
-    1618189320.0 - HODL merch is still available for a limited time! Get it before it's gone: https://t.co/oMjErjsTSH #HODL #AUDL @theAUDL #eth #btc #bch #doge https://t.co/lamGmbQP7W - -0.01804947853088379
-    1618190255.0 - Same question but a little under a year later. 
-    
-    My best answer is now ETH + Bitcoin (and maybe YFI) https://t.co/KWXTLB2xiN - 0.5922045707702637
-    1618190265.0 - @BrantlyMillegan @DomainsFlx @sunnya97 I cannot say I have any issue with how .eth and ENS domains is doing what they are doing. It is more about the legacy TLD that I have issues - that I have noticed since before I found out about HNS. I'm curious though, if takedown request  made on .eth domain, what's process? - -0.5045856833457947
+    https://t.co/meCeS3iopd - -0.4473927617073059
+    1618318221.0 - Bitcoin, the world’s largest cryptocurrency, was at $62,741 Tuesday morning; the highest it's reached yet. 
+    https://t.co/8zbfq9J02K - 0.21376252174377441
+    1618318227.0 - Bitcoin, the world’s largest cryptocurrency, was at $62,741 Tuesday morning; the highest it's reached yet. 
+    https://t.co/B8SnOIg5iq - 0.21376252174377441
     
 
 Da wir den aktuellen Sentimenttrend bestimmen wollen implementieren wir eine Simple Moving Average
@@ -1924,7 +1921,7 @@ for i in range(days_in_future):
 print(y_predicted_all)
 ```
 
-    [2083.82, 2075.4836, 2068.7039, 2067.1519, 2066.6062, 2065.54, 2067.3257, 2070.519, 2071.4004, 2073.6355, 2078.7437, 2085.281, 2090.877, 2093.9055, 2096.084, 2096.0632, 2103.8884, 2109.9678, 2119.3357, 2126.87, 2128.6204, 2128.591, 2127.9043, 2127.1924, 2126.0662, 2125.7139, 2136.8489, 2138.9946, 2140.1228, 2140.8008]
+    [2092.2715, 2073.6265, 2063.6436, 2057.164, 2052.5066, 2050.6074, 2051.2395, 2053.5042, 2056.1667, 2060.7139, 2065.2168, 2071.6477, 2080.609, 2088.301, 2096.2368, 2109.2986, 2122.8496, 2138.9326, 2147.1602, 2159.994, 2167.4915, 2176.7798, 2185.1917, 2192.2021, 2198.481, 2203.2542, 2207.3948, 2209.821, 2212.1824, 2213.046]
     
 
 
