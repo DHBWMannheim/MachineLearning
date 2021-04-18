@@ -245,7 +245,6 @@ Hier werden die Trainingsdaten eingelesen, so dass die 10000 Features gefüllt w
 
 
 ```python
-# train_text = raw_train_ds.map(lambda x, y: x)
 train_text = np.concatenate([x for x, y in raw_train_ds], axis=0)
 vectorize_layer.adapt(train_text)
 ```
@@ -480,9 +479,9 @@ train_predictions_baseline = model.predict(train_features, batch_size=batch_size
 test_predictions_baseline = model.predict(test_features, batch_size=batch_size)
 ```
 
-Mit den vorher gemessenen Metriken kann nun die Genauigkeit mithilfe einer Confusion-Matrix bestimmt werden. Hier wird ein Threshold von 0.5 verwendet, um die Anzahl an falschen Predictions insgesamt zu reduzieren. Dabei hat das Modell eine Testaccuracy von 78.23%, während die Präzision bei 76.93% und der Recall bei 80.43% liegt. Die Präzision sagt hier aus, dass 76.93% aller positiv predicteten Tweets tatsächlich positiv waren. Der Recall sagt hier, dass 80.43% aller positiven Tweets korrekt klassifiziert wurden.
+Mit den vorher gemessenen Metriken kann nun die Genauigkeit mithilfe einer Confusion-Matrix bestimmt werden. Hier wird ein Threshold von 0.5 verwendet, um die Anzahl an falschen Predictions insgesamt zu reduzieren. Dabei hat das Modell eine Testaccuracy von 79.66%, während die Präzision bei 79.99% und der Recall bei 79.16% liegt. Die Präzision sagt hier aus, dass 79.99% aller positiv predicteten Tweets tatsächlich positiv waren. Der Recall sagt hier, dass 79.16% aller positiven Tweets korrekt klassifiziert wurden.
 
-Weiterhin beträgt die AUC 85.52% und da die Kurve über der Diagonale liegt ist das Modell besser als der Zufall.
+Weiterhin beträgt die AUC 87.84 und da die Kurve über der Diagonale liegt ist das Modell besser als der Zufall.
 
 
 ```python
@@ -537,7 +536,7 @@ Die ROC-Kurve beschreibt hier Confusion Matrizen mit unterschiedlichen Threshold
 
 (1,1) besagt, alle negativen Tweets wurden korrekt predicted, alle positiven falsch
 
-Wie bereits erwähnt beträgt die AUC 85.52% und da die Kurve über der Diagonale liegt ist das Modell besser als der Zufall, sowohl im Training, als auch im Test.
+Wie bereits erwähnt beträgt die AUC 87.84 und da die Kurve über der Diagonale liegt ist das Modell besser als der Zufall, sowohl im Training, als auch im Test.
 
 
 ```python
@@ -562,7 +561,7 @@ plt.show()
     
 
 
-Nun exportieren wir das fertige Modell. Da wir vorher die Texte vektorisiert haben, bevor sie in das Modell gegeben wurden, können wir hier ein Modell exportieren, welche die Texte beim Input vektorisiert. Dies macht uns das zukünftige Predicten einfacher, da das Model nicht immer neu trainiert werden muss. Zusätzlich fügen wir am Ende eine weitere Node mit einer Sigmoid Aktivierungsfunktion hinzu. Diese bildet alle Werte auf Werte zwischen 0 und 1 ab, sodass unsere definiert Sentiment-Range eingehalten wird. Der Vektorisationlayer und die Sigmoid Node wurden beim Lernen vernachlässigt, damit die Lerneffizienz höher ausfällt.
+Nun exportieren wir das fertige Modell. Da wir vorher die Texte vektorisiert haben, bevor sie in das Modell gegeben wurden, können wir hier ein Modell exportieren, welche die Texte beim Input vektorisiert. Dies macht uns das zukünftige Predicten einfacher, da das Model nicht immer neu trainiert werden muss. Der Vektorisationlayer und die Sigmoid Node wurden beim Lernen vernachlässigt, damit die Lerneffizienz höher ausfällt.
 
 
 ```python
