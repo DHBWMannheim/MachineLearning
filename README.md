@@ -31,11 +31,15 @@ Für das Modell wird [Tensorflow](https://www.tensorflow.org/) verwendet, zum Pl
 Um dieses Notebook zu benutzen müssen Python 3.x (vorzugsweise 3.7.3) und folgende Packages installiert werden:
 
 * tensorflow==2.4.1
-* matplotlib==3.0.3
+* matplotlib==3.3.4
 * pandas==1.2.2
 * pandas_datareader==0.9.0
 * searchtweets-v2==1.0.7
-* sklearn
+* scikit-learn==0.24.1
+* seaborn==0.11.0
+* numpy==1.19.2
+
+Diese können auch automatisch über die requirements.txt mit pip installiert werden.
 
 Das Datenset für das Trainieren kann über [diesen Link](https://www.dropbox.com/s/ur7pw797mgcc1wr/tweets.csv?dl=0) heruntergeladen werden. Dabei muss die Datei "tweets.csv" in den gleichen Ordner wie dieses Notepad abgelegt werden.
 
@@ -121,29 +125,29 @@ dataframe.head()
   </thead>
   <tbody>
     <tr>
-      <th>792586</th>
-      <td>0</td>
-      <td>school  but last day =D</td>
+      <th>873380</th>
+      <td>4</td>
+      <td>Ahhhhhh....2 jumps- I feel back to center agai...</td>
     </tr>
     <tr>
-      <th>397018</th>
+      <th>643814</th>
       <td>0</td>
-      <td>awe my laptop died  yay for blackberrys!</td>
+      <td>I really do want to go to sleep, but I can't s...</td>
     </tr>
     <tr>
-      <th>124537</th>
+      <th>618262</th>
       <td>0</td>
-      <td>@BATMANNN awwwwwh  well, just try and forget a...</td>
+      <td>@callmedingding don't laugh at me jerk. i hurt</td>
     </tr>
     <tr>
-      <th>712067</th>
+      <th>293885</th>
       <td>0</td>
-      <td>just left Texas now in new Mexico here we com...</td>
+      <td>@LaurenConrad im crying the hills is nuthing w...</td>
     </tr>
     <tr>
-      <th>734459</th>
+      <th>478219</th>
       <td>0</td>
-      <td>@BabeNatasha and spanish and write up journals...</td>
+      <td>fuck, i've lost my wallet.. I think</td>
     </tr>
   </tbody>
 </table>
@@ -200,12 +204,12 @@ for text_batch, label_batch in raw_train_ds.take(1):
     print("Label:", label_batch.numpy()[i])
 ```
 
-    Tweet: b'@deannetheresa I hope things are okay, dear  xoxo'
+    Tweet: b"@grossdale have fun in fl. I'll be there the day you leave "
     Label: 0
-    Tweet: b'drip drip drop little april showers '
-    Label: 4
-    Tweet: b'@xxandip mine too  diversity HAS to win'
-    Label: 4
+    Tweet: b'needs a full day of sleep ... like 20 hrs instead of 3-4 hrs a night... starting to catch up!!!  '
+    Label: 0
+    Tweet: b"why are you such an idiot ? i can't understand u, mygooosh! "
+    Label: 0
     
 
 @matthias
@@ -214,25 +218,25 @@ Um unnötige Duplikate zu vermeiden, werden die Daten für das Modell normalisie
 
 
 ```python
-def normalize_data(input_data):
-  lowercase = tf.strings.lower(input_data)
+def normalize_data(tweet):
+  lowercase = tf.strings.lower(tweet)
   return tf.strings.regex_replace(lowercase, '@(\w*)|(\\n)|(https:\/\/t\.co[\w\/]*)', '')
 ```
 
 Nun können die Texte vektorisiert werden. Da ein neuronales Netz nicht mit Wörtern und Buchstaben arbeiten kann, müssen diese in Zahlen umgewandelt werden. Dafür werden die Tweets in Vektoren umgewandelt. Die Größe des Vektors wird dabei mit sequence_length definiert. Die Größe der sequence_length, also die Größe des Vektors, sollte in der Regel so groß sein, dass alle Wörter eines Tweets hineinpassen. Da die Anzahl an Zeichen auf 280 pro Tweet limitiert ist, und die durchnittliche Anzahl der Zeichen pro Wort im Englischen bei 5 liegt, wird die sequence_length mit 56 definiert.
 
-Hier erhält jedes Wort eine fortlaufende Id. Die Reihenfolge dieser Ids ist durch die Reihenfolge in dem die Wörter vektorisiert wurden festgelegt. Dabei können aufgrund max_features maximal 10000 Wörter eingelesen werden. Alle weiteren Wörter werden ignoriert. Diese Menge an Vokabeln sollte aber ausreichen, da in der Alltagssprache lediglich zwei- bis dreitausend Wörter verwendet werden. Somit kann jedes Wort einer Id zugewiesen werden, sodass man ganze Sätze in einem Vektor abbilden kann. Da die Vektorengröße immer der sequence_length enstpricht, wird auch das Problem, dass ein neuronales Netz immer die gleiche Inputgröße benötigt, gelöst.
+Hier erhält jedes Wort eine fortlaufende Id. Die Reihenfolge dieser Ids ist durch die Reihenfolge in dem die Wörter vektorisiert wurden festgelegt. Dabei können aufgrund dictionary_size maximal 10000 Wörter eingelesen werden. Alle weiteren Wörter werden ignoriert. Diese Menge an Vokabeln sollte aber ausreichen, da in der Alltagssprache lediglich zwei- bis dreitausend Wörter verwendet werden. Somit kann jedes Wort einer Id zugewiesen werden, sodass man ganze Sätze in einem Vektor abbilden kann. Da die Vektorengröße immer der sequence_length enstpricht, wird auch das Problem, dass ein neuronales Netz immer die gleiche Inputgröße benötigt, gelöst.
 
 Dafür wird hier ein Vektorlayer erstellt. Gleichzeitig können hier die Daten normalisiert werden.
 
 
 ```python
-max_features = 10000
+dictionary_size = 10000
 sequence_length = 56
 
 vectorize_layer = TextVectorization(
     standardize=normalize_data,
-    max_tokens=max_features,
+    max_tokens=dictionary_size,
     output_mode='int',
     output_sequence_length=sequence_length)
 ```
@@ -241,7 +245,8 @@ Hier werden die Trainingsdaten eingelesen, so dass die 10000 Features gefüllt w
 
 
 ```python
-train_text = raw_train_ds.map(lambda x, y: x)
+# train_text = raw_train_ds.map(lambda x, y: x)
+train_text = np.concatenate([x for x, y in raw_train_ds], axis=0)
 vectorize_layer.adapt(train_text)
 ```
 
@@ -249,7 +254,7 @@ Mit der Methode können wir alle Datensätze vektorisieren. Hier normalisieren w
 
 
 ```python
-def vectorize_text(text, label):
+def vectorize_tweet(text, label):
   text = tf.expand_dims(text, -1)
   return vectorize_layer(text), int(label / 4)
 ```
@@ -262,39 +267,38 @@ text_batch, label_batch = next(iter(raw_train_ds))
 text, label = text_batch[0], label_batch[0]
 print(text)
 print(label)
-print(vectorize_text(text, label))
+print(vectorize_tweet(text, label))
 ```
 
-    tf.Tensor(b'@deannetheresa I hope things are okay, dear  xoxo', shape=(), dtype=string)
+    tf.Tensor(b"@grossdale have fun in fl. I'll be there the day you leave ", shape=(), dtype=string)
     tf.Tensor(0, shape=(), dtype=int64)
     (<tf.Tensor: shape=(1, 56), dtype=int64, numpy=
-    array([[   2,   88,  241,   30, 1166,  858, 1012,    0,    0,    0,    0,
-               0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-               0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-               0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-               0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-               0]], dtype=int64)>, 0)
+    array([[ 16, 136,  11,   1, 108,  24,  96,   4,  42,   8, 349,   0,   0,
+              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+              0,   0,   0,   0]], dtype=int64)>, 0)
     
 
 Mithilfe des Vektorlayers können wir von den Ids wieder auf die Wörtern zurückschließen. Außerdem können wir die Größe unseres Wörterbuchs auslesen.
 
 
 ```python
-print("1234 ---> ", vectorize_layer.get_vocabulary()[1234])
-print('Vocabulary size: {}'.format(len(vectorize_layer.get_vocabulary())))
+print("Token 1234:", vectorize_layer.get_vocabulary()[1234])
+print('Dictionary size: {}'.format(len(vectorize_layer.get_vocabulary())))
 ```
 
-    1234 --->  exciting
-    Vocabulary size: 10000
+    Token 1234: comment
+    Dictionary size: 10000
     
 
 Nun vektorisieren wir alle benötigten Datensätze.
 
 
 ```python
-train_ds = raw_train_ds.map(vectorize_text)
-val_ds = raw_val_ds.map(vectorize_text)
-test_ds = raw_test_ds.map(vectorize_text)
+train_ds = raw_train_ds.map(vectorize_tweet)
+val_ds = raw_val_ds.map(vectorize_tweet)
+test_ds = raw_test_ds.map(vectorize_tweet)
 ```
 
 Aus Performancegründen können die Datensätze weiter aufbereitet werden. Mit `.cache()` bleiben die Daten im Arbeitsspeicher, nachdem diese von der Festplatte geladen wurden. Somit kann sichergestellt werden, dass das Laden der Daten nicht der Flaschenhals beim Training sein wird.
@@ -310,7 +314,7 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 ```
 
-Schließlich definieren wir das eigentliche Modell. Der erste Layer ist ein Embedding-Layer. Dieser sorgt dafür, dass jedes Wort einen eigenen Vektor erhält, welcher die Bedeutung des Wortes darstellt. Diese Vektoren werden mit dem Modell über die Zeit trainiert. Dieser Embedding-Layer fügt eine weitere Dimension zum Outputvektor hinzu. Hier definieren wir mit der embedding_dim die Größe der Layer, das bedeutet, dass es 32 Nodes pro Layer gibt.
+Schließlich definieren wir das eigentliche Modell. Der erste Layer ist ein Embedding-Layer. Dieser sorgt dafür, dass jedes Wort einen eigenen Vektor erhält, welcher die Bedeutung des Wortes darstellt. Diese Vektoren werden mit dem Modell über die Zeit trainiert. Dieser Embedding-Layer fügt eine weitere Dimension zum Outputvektor hinzu. Hier definieren wir mit der Embedding-Dimension die Größe der Layer, das bedeutet, dass es 32 Nodes pro Layer gibt.
 
 Als nächster Layer wird `GlobalAveragePooling1D` verwendet. Dieser reduziert die Dimension wieder um 1 und verrechnet dabei alle Informationen, sodass keine Informationen verloren gehen. Der Outputvektor wird dabei wieder auf eine feste Länge normalisiert.
 
@@ -322,32 +326,30 @@ Wir können nun noch mit `.summary()` das Modell verifizieren.
 
 
 ```python
-embedding_dim = 32
-
 model = tf.keras.Sequential([
-  layers.Embedding(max_features + 1, embedding_dim),
-  layers.GlobalAveragePooling1D(),
-  layers.Dropout(0.2),
+  layers.Embedding(dictionary_size, 32),
+  layers.GlobalMaxPooling1D(),
+  layers.Dropout(0.1),
   layers.Dense(1, activation='sigmoid')
 ])
 
 model.summary()
 ```
 
-    Model: "sequential"
+    Model: "sequential_2"
     _________________________________________________________________
     Layer (type)                 Output Shape              Param #   
     =================================================================
-    embedding (Embedding)        (None, None, 32)          320032    
+    embedding_2 (Embedding)      (None, None, 32)          320000    
     _________________________________________________________________
-    global_average_pooling1d (Gl (None, 32)                0         
+    global_max_pooling1d (Global (None, 32)                0         
     _________________________________________________________________
-    dropout (Dropout)            (None, 32)                0         
+    dropout_2 (Dropout)          (None, 32)                0         
     _________________________________________________________________
-    dense (Dense)                (None, 1)                 33        
+    dense_2 (Dense)              (None, 1)                 33        
     =================================================================
-    Total params: 320,065
-    Trainable params: 320,065
+    Total params: 320,033
+    Trainable params: 320,033
     Non-trainable params: 0
     _________________________________________________________________
     
@@ -382,49 +384,33 @@ Nun wird das Modell trainiert. Dafür definieren wir mit epochs, wie oft wir üb
 
 
 ```python
-epochs = 10
-history = model.fit(
+training_history = model.fit(
     train_ds,
     validation_data=val_ds,
-    epochs=epochs)
+    epochs=10)
 ```
 
     Epoch 1/10
-    3200/3200 [==============================] - 26s 8ms/step - loss: 0.6871 - tp: 180734.9303 - fp: 121461.9322 - tn: 134729.6913 - fn: 75393.3461 - accuracy: 0.5933 - precision: 0.5835 - recall: 0.6284 - auc: 0.6328 - val_loss: 0.6545 - val_tp: 95829.0000 - val_fp: 46293.0000 - val_tn: 81647.0000 - val_fn: 32231.0000 - val_accuracy: 0.6933 - val_precision: 0.6743 - val_recall: 0.7483 - val_auc: 0.7653
+    3200/3200 [==============================] - 31s 9ms/step - loss: 0.6577 - tp: 156518.8166 - fp: 56567.5114 - tn: 199717.6001 - fn: 99515.9719 - accuracy: 0.6709 - precision: 0.7073 - recall: 0.5846 - auc: 0.7300 - val_loss: 0.5372 - val_tp: 94921.0000 - val_fp: 29195.0000 - val_tn: 98917.0000 - val_fn: 32967.0000 - val_accuracy: 0.7572 - val_precision: 0.7648 - val_recall: 0.7422 - val_auc: 0.8308
     Epoch 2/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.6411 - tp: 192549.5348 - fp: 91421.7704 - tn: 164769.8532 - fn: 63578.7416 - accuracy: 0.6946 - precision: 0.6746 - recall: 0.7528 - auc: 0.7650 - val_loss: 0.6017 - val_tp: 96193.0000 - val_fp: 40336.0000 - val_tn: 87604.0000 - val_fn: 31867.0000 - val_accuracy: 0.7180 - val_precision: 0.7046 - val_recall: 0.7512 - val_auc: 0.7885
+    3200/3200 [==============================] - 30s 9ms/step - loss: 0.5185 - tp: 194603.1793 - fp: 58898.5345 - tn: 197386.5770 - fn: 61431.6092 - accuracy: 0.7634 - precision: 0.7668 - recall: 0.7564 - auc: 0.8369 - val_loss: 0.4819 - val_tp: 99400.0000 - val_fp: 29005.0000 - val_tn: 99107.0000 - val_fn: 28488.0000 - val_accuracy: 0.7754 - val_precision: 0.7741 - val_recall: 0.7772 - val_auc: 0.8537
     Epoch 3/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.5921 - tp: 193566.6373 - fp: 78835.7038 - tn: 177355.9197 - fn: 62561.6392 - accuracy: 0.7216 - precision: 0.7078 - recall: 0.7553 - auc: 0.7917 - val_loss: 0.5621 - val_tp: 97859.0000 - val_fp: 36290.0000 - val_tn: 91650.0000 - val_fn: 30201.0000 - val_accuracy: 0.7403 - val_precision: 0.7295 - val_recall: 0.7642 - val_auc: 0.8107
+    3200/3200 [==============================] - 30s 9ms/step - loss: 0.4748 - tp: 200245.1097 - fp: 57128.4427 - tn: 199156.6689 - fn: 55789.6789 - accuracy: 0.7789 - precision: 0.7771 - recall: 0.7815 - auc: 0.8575 - val_loss: 0.4623 - val_tp: 100345.0000 - val_fp: 28019.0000 - val_tn: 100093.0000 - val_fn: 27543.0000 - val_accuracy: 0.7830 - val_precision: 0.7817 - val_recall: 0.7846 - val_auc: 0.8638
     Epoch 4/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.5560 - tp: 196481.2887 - fp: 70879.8044 - tn: 185311.8191 - fn: 59646.9878 - accuracy: 0.7436 - precision: 0.7331 - recall: 0.7667 - auc: 0.8130 - val_loss: 0.5334 - val_tp: 99374.0000 - val_fp: 33623.0000 - val_tn: 94317.0000 - val_fn: 28686.0000 - val_accuracy: 0.7566 - val_precision: 0.7472 - val_recall: 0.7760 - val_auc: 0.8273
+    3200/3200 [==============================] - 30s 9ms/step - loss: 0.4565 - tp: 201891.4549 - fp: 54924.4136 - tn: 201360.6979 - fn: 54143.3336 - accuracy: 0.7869 - precision: 0.7856 - recall: 0.7886 - auc: 0.8675 - val_loss: 0.4528 - val_tp: 100645.0000 - val_fp: 27281.0000 - val_tn: 100831.0000 - val_fn: 27243.0000 - val_accuracy: 0.7870 - val_precision: 0.7867 - val_recall: 0.7870 - val_auc: 0.8691
     Epoch 5/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.5298 - tp: 199162.4302 - fp: 66248.4030 - tn: 189943.2206 - fn: 56965.8463 - accuracy: 0.7583 - precision: 0.7492 - recall: 0.7771 - auc: 0.8283 - val_loss: 0.5133 - val_tp: 100748.0000 - val_fp: 32292.0000 - val_tn: 95648.0000 - val_fn: 27312.0000 - val_accuracy: 0.7672 - val_precision: 0.7573 - val_recall: 0.7867 - val_auc: 0.8383
+    3200/3200 [==============================] - 30s 9ms/step - loss: 0.4464 - tp: 202485.0519 - fp: 53292.8750 - tn: 202992.2365 - fn: 53549.7366 - accuracy: 0.7911 - precision: 0.7911 - recall: 0.7906 - auc: 0.8732 - val_loss: 0.4473 - val_tp: 100721.0000 - val_fp: 26530.0000 - val_tn: 101582.0000 - val_fn: 27167.0000 - val_accuracy: 0.7902 - val_precision: 0.7915 - val_recall: 0.7876 - val_auc: 0.8722
     Epoch 6/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.5117 - tp: 201209.7004 - fp: 63726.0312 - tn: 192465.5923 - fn: 54918.5761 - accuracy: 0.7675 - precision: 0.7586 - recall: 0.7851 - auc: 0.8383 - val_loss: 0.4997 - val_tp: 101708.0000 - val_fp: 31479.0000 - val_tn: 96461.0000 - val_fn: 26352.0000 - val_accuracy: 0.7741 - val_precision: 0.7636 - val_recall: 0.7942 - val_auc: 0.8455
+    3200/3200 [==============================] - 29s 9ms/step - loss: 0.4398 - tp: 202980.9925 - fp: 52181.3374 - tn: 204103.7741 - fn: 53053.7960 - accuracy: 0.7945 - precision: 0.7951 - recall: 0.7930 - auc: 0.8770 - val_loss: 0.4439 - val_tp: 100828.0000 - val_fp: 26177.0000 - val_tn: 101935.0000 - val_fn: 27060.0000 - val_accuracy: 0.7920 - val_precision: 0.7939 - val_recall: 0.7884 - val_auc: 0.8742
     Epoch 7/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4992 - tp: 202901.5992 - fp: 62216.5726 - tn: 193975.0509 - fn: 53226.6773 - accuracy: 0.7739 - precision: 0.7646 - recall: 0.7919 - auc: 0.8452 - val_loss: 0.4905 - val_tp: 102467.0000 - val_fp: 31093.0000 - val_tn: 96847.0000 - val_fn: 25593.0000 - val_accuracy: 0.7786 - val_precision: 0.7672 - val_recall: 0.8001 - val_auc: 0.8505
+    3200/3200 [==============================] - 30s 9ms/step - loss: 0.4348 - tp: 203462.0075 - fp: 51213.2596 - tn: 205071.8519 - fn: 52572.7810 - accuracy: 0.7972 - precision: 0.7984 - recall: 0.7947 - auc: 0.8799 - val_loss: 0.4417 - val_tp: 100953.0000 - val_fp: 25932.0000 - val_tn: 102180.0000 - val_fn: 26935.0000 - val_accuracy: 0.7935 - val_precision: 0.7956 - val_recall: 0.7894 - val_auc: 0.8755
     Epoch 8/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4907 - tp: 204168.8301 - fp: 61264.5039 - tn: 194927.1197 - fn: 51959.4464 - accuracy: 0.7784 - precision: 0.7687 - recall: 0.7968 - auc: 0.8500 - val_loss: 0.4844 - val_tp: 103029.0000 - val_fp: 30814.0000 - val_tn: 97126.0000 - val_fn: 25031.0000 - val_accuracy: 0.7819 - val_precision: 0.7698 - val_recall: 0.8045 - val_auc: 0.8540
+    3200/3200 [==============================] - 30s 9ms/step - loss: 0.4310 - tp: 203642.1824 - fp: 50673.6226 - tn: 205611.4889 - fn: 52392.6061 - accuracy: 0.7987 - precision: 0.8003 - recall: 0.7956 - auc: 0.8820 - val_loss: 0.4402 - val_tp: 101019.0000 - val_fp: 25790.0000 - val_tn: 102322.0000 - val_fn: 26869.0000 - val_accuracy: 0.7943 - val_precision: 0.7966 - val_recall: 0.7899 - val_auc: 0.8764
     Epoch 9/10
-    3200/3200 [==============================] - 22s 7ms/step - loss: 0.4847 - tp: 205115.1156 - fp: 60590.2127 - tn: 195601.4108 - fn: 51013.1609 - accuracy: 0.7817 - precision: 0.7715 - recall: 0.8006 - auc: 0.8536 - val_loss: 0.4801 - val_tp: 103409.0000 - val_fp: 30510.0000 - val_tn: 97430.0000 - val_fn: 24651.0000 - val_accuracy: 0.7845 - val_precision: 0.7722 - val_recall: 0.8075 - val_auc: 0.8566
+    3200/3200 [==============================] - 30s 9ms/step - loss: 0.4285 - tp: 203954.6364 - fp: 50278.4149 - tn: 206006.6967 - fn: 52080.1521 - accuracy: 0.8001 - precision: 0.8019 - recall: 0.7967 - auc: 0.8834 - val_loss: 0.4391 - val_tp: 101041.0000 - val_fp: 25658.0000 - val_tn: 102454.0000 - val_fn: 26847.0000 - val_accuracy: 0.7949 - val_precision: 0.7975 - val_recall: 0.7901 - val_auc: 0.8770
     Epoch 10/10
-    3200/3200 [==============================] - 23s 7ms/step - loss: 0.4805 - tp: 205772.1649 - fp: 60158.3780 - tn: 196033.2455 - fn: 50356.1115 - accuracy: 0.7838 - precision: 0.7734 - recall: 0.8033 - auc: 0.8562 - val_loss: 0.4769 - val_tp: 103712.0000 - val_fp: 30384.0000 - val_tn: 97556.0000 - val_fn: 24348.0000 - val_accuracy: 0.7862 - val_precision: 0.7734 - val_recall: 0.8099 - val_auc: 0.8586
+    3200/3200 [==============================] - 30s 9ms/step - loss: 0.4259 - tp: 204165.2765 - fp: 49650.7610 - tn: 206634.3505 - fn: 51869.5120 - accuracy: 0.8018 - precision: 0.8041 - recall: 0.7975 - auc: 0.8849 - val_loss: 0.4384 - val_tp: 101060.0000 - val_fp: 25578.0000 - val_tn: 102534.0000 - val_fn: 26828.0000 - val_accuracy: 0.7953 - val_precision: 0.7980 - val_recall: 0.7902 - val_auc: 0.8775
     
-
-In dem History-Objekt können wir nun sehen, welche Daten Tensorflow für uns aufgezeichnet hat.
-
-
-```python
-history_dict = history.history
-history_dict.keys()
-```
-
-
-
-
-    dict_keys(['loss', 'tp', 'fp', 'tn', 'fn', 'accuracy', 'precision', 'recall', 'auc', 'val_loss', 'val_tp', 'val_fp', 'val_tn', 'val_fn', 'val_accuracy', 'val_precision', 'val_recall', 'val_auc'])
-
-
 
 Mithilfe von Matplotlib können wir den Loss plotten und beobachten, wie sich diese während des Lernens verhalten hat. Optimalerweise sollte diese mit der Zeit sinken, da mit dem Anpassen der Weights das Modell immer genauere Aussagen treffen sollte und somit auch der Fehler immer geringer werden sollte.
 
@@ -432,6 +418,8 @@ Wir können erkennen, dass dies tatsächlich der Fall ist. Der Loss fällt fast 
 
 
 ```python
+history_dict = training_history.history
+
 loss = history_dict['loss']
 val_loss = history_dict['val_loss']
 
@@ -449,7 +437,7 @@ plt.show()
 
 
     
-![png](output_41_0.png)
+![png](output_39_0.png)
     
 
 
@@ -474,7 +462,7 @@ plt.show()
 
 
     
-![png](output_43_0.png)
+![png](output_41_0.png)
     
 
 
@@ -521,25 +509,25 @@ print()
 plot_cm(test_labels, test_predictions_baseline)
 ```
 
-    loss :  0.4790298342704773
-    tp :  129218.0
-    fp :  38367.0
-    tn :  121516.0
-    fn :  30899.0
-    accuracy :  0.7835437655448914
-    precision :  0.7710594534873962
-    recall :  0.8070223927497864
-    auc :  0.8568227887153625
+    loss :  0.4370047450065613
+    tp :  126839.0
+    fp :  31712.0
+    tn :  128061.0
+    fn :  33388.0
+    accuracy :  0.7965624928474426
+    precision :  0.7999886274337769
+    recall :  0.7916206121444702
+    auc :  0.8783805966377258
     
-    Negative Stimmung korrekt erkannt (True Negatives):  121516
-    Negative Stimmung falsch positiv erkannt (False Positives):  38367
-    Positive Stimmung falsch negativ erkannt (False Negatives):  30899
-    Positive Stimmung korrekt erkannt (True Positives):  129218
+    Negative Stimmung korrekt erkannt (True Negatives):  128061
+    Negative Stimmung falsch positiv erkannt (False Positives):  31712
+    Positive Stimmung falsch negativ erkannt (False Negatives):  33388
+    Positive Stimmung korrekt erkannt (True Positives):  126839
     
 
 
     
-![png](output_47_1.png)
+![png](output_45_1.png)
     
 
 
@@ -570,7 +558,7 @@ plt.show()
 
 
     
-![png](output_49_0.png)
+![png](output_47_0.png)
     
 
 
@@ -600,9 +588,9 @@ sentiment_model.predict(examples)
 
 
 
-    array([[0.8538385 ],
-           [0.52383393],
-           [0.45286494]], dtype=float32)
+    array([[0.9744337 ],
+           [0.5660003 ],
+           [0.03791037]], dtype=float32)
 
 
 
@@ -751,53 +739,53 @@ df
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-04-08</th>
-      <td>2102.873779</td>
-      <td>2055.163330</td>
-      <td>2088.772217</td>
-      <td>2072.108887</td>
-      <td>1.981247e+10</td>
-      <td>2072.108887</td>
-    </tr>
-    <tr>
-      <th>2021-04-09</th>
-      <td>2196.996338</td>
-      <td>2062.787598</td>
-      <td>2071.111572</td>
-      <td>2135.942139</td>
-      <td>2.498624e+10</td>
-      <td>2135.942139</td>
-    </tr>
-    <tr>
-      <th>2021-04-10</th>
-      <td>2165.191406</td>
-      <td>2119.865723</td>
-      <td>2136.156982</td>
-      <td>2157.656982</td>
-      <td>1.969284e+10</td>
-      <td>2157.656982</td>
-    </tr>
-    <tr>
-      <th>2021-04-11</th>
-      <td>2199.718750</td>
-      <td>2110.368896</td>
-      <td>2157.361816</td>
-      <td>2139.353271</td>
-      <td>2.172794e+10</td>
-      <td>2139.353271</td>
-    </tr>
-    <tr>
       <th>2021-04-13</th>
-      <td>2268.446777</td>
-      <td>2139.883789</td>
-      <td>2199.374512</td>
-      <td>2265.558594</td>
-      <td>2.497226e+10</td>
-      <td>2265.558594</td>
+      <td>2449.687500</td>
+      <td>2284.563721</td>
+      <td>2299.347900</td>
+      <td>2435.104980</td>
+      <td>3.559282e+10</td>
+      <td>2435.104980</td>
+    </tr>
+    <tr>
+      <th>2021-04-14</th>
+      <td>2544.267334</td>
+      <td>2409.924072</td>
+      <td>2436.034668</td>
+      <td>2519.116211</td>
+      <td>3.232561e+10</td>
+      <td>2519.116211</td>
+    </tr>
+    <tr>
+      <th>2021-04-15</th>
+      <td>2547.555664</td>
+      <td>2318.675049</td>
+      <td>2516.601807</td>
+      <td>2431.946533</td>
+      <td>3.619693e+10</td>
+      <td>2431.946533</td>
+    </tr>
+    <tr>
+      <th>2021-04-16</th>
+      <td>2497.385254</td>
+      <td>2333.682861</td>
+      <td>2429.980957</td>
+      <td>2344.895020</td>
+      <td>3.234981e+10</td>
+      <td>2344.895020</td>
+    </tr>
+    <tr>
+      <th>2021-04-18</th>
+      <td>2359.698486</td>
+      <td>2044.876587</td>
+      <td>2089.619385</td>
+      <td>2070.818359</td>
+      <td>4.703721e+10</td>
+      <td>2070.818359</td>
     </tr>
   </tbody>
 </table>
-<p>2073 rows × 6 columns</p>
+<p>2078 rows × 6 columns</p>
 </div>
 
 
@@ -964,78 +952,78 @@ df
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-04-08</th>
-      <td>2072.108887</td>
-      <td>1991.376608</td>
-      <td>4.081519</td>
-      <td>22.511697</td>
-      <td>60.937251</td>
-      <td>59.999725</td>
-      <td>45.0</td>
-      <td>1882.091046</td>
-      <td>8</td>
-      <td>3</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <th>2021-04-09</th>
-      <td>2135.942139</td>
-      <td>1999.267442</td>
-      <td>4.168943</td>
-      <td>17.379778</td>
-      <td>62.985439</td>
-      <td>62.776708</td>
-      <td>45.0</td>
-      <td>1899.477301</td>
-      <td>9</td>
-      <td>4</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <th>2021-04-10</th>
-      <td>2157.656982</td>
-      <td>2006.371884</td>
-      <td>4.245169</td>
-      <td>16.880694</td>
-      <td>64.903268</td>
-      <td>63.699943</td>
-      <td>90.0</td>
-      <td>1922.793451</td>
-      <td>10</td>
-      <td>5</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <th>2021-04-11</th>
-      <td>2139.353271</td>
-      <td>2006.995302</td>
-      <td>4.145305</td>
-      <td>11.519786</td>
-      <td>64.347786</td>
-      <td>62.297343</td>
-      <td>90.0</td>
-      <td>1945.828607</td>
-      <td>11</td>
-      <td>6</td>
-      <td>4</td>
-    </tr>
-    <tr>
       <th>2021-04-13</th>
-      <td>2265.558594</td>
-      <td>2030.576832</td>
-      <td>4.513208</td>
-      <td>14.579736</td>
-      <td>70.376352</td>
-      <td>67.595484</td>
-      <td>95.0</td>
-      <td>1979.435864</td>
+      <td>2435.104980</td>
+      <td>2087.636183</td>
+      <td>5.462911</td>
+      <td>13.618697</td>
+      <td>85.377266</td>
+      <td>73.005780</td>
+      <td>85.0</td>
+      <td>2023.104608</td>
       <td>13</td>
       <td>1</td>
       <td>4</td>
     </tr>
+    <tr>
+      <th>2021-04-14</th>
+      <td>2519.116211</td>
+      <td>2151.219375</td>
+      <td>6.256303</td>
+      <td>24.190903</td>
+      <td>99.025381</td>
+      <td>75.243166</td>
+      <td>90.0</td>
+      <td>2063.918317</td>
+      <td>14</td>
+      <td>2</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2021-04-15</th>
+      <td>2431.946533</td>
+      <td>2174.200615</td>
+      <td>6.366490</td>
+      <td>16.187475</td>
+      <td>102.914171</td>
+      <td>68.865192</td>
+      <td>90.0</td>
+      <td>2099.690912</td>
+      <td>15</td>
+      <td>3</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2021-04-16</th>
+      <td>2344.895020</td>
+      <td>2194.967448</td>
+      <td>5.996797</td>
+      <td>11.243856</td>
+      <td>99.281483</td>
+      <td>63.111826</td>
+      <td>85.0</td>
+      <td>2132.367865</td>
+      <td>16</td>
+      <td>4</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2021-04-18</th>
+      <td>2070.818359</td>
+      <td>2194.254329</td>
+      <td>4.579605</td>
+      <td>-2.245139</td>
+      <td>78.982640</td>
+      <td>49.180422</td>
+      <td>80.0</td>
+      <td>2144.924536</td>
+      <td>18</td>
+      <td>6</td>
+      <td>4</td>
+    </tr>
   </tbody>
 </table>
-<p>2054 rows × 11 columns</p>
+<p>2059 rows × 11 columns</p>
 </div>
 
 
@@ -1058,7 +1046,7 @@ plt.show()
 
 
     
-![png](output_60_0.png)
+![png](output_58_0.png)
     
 
 
@@ -1077,8 +1065,8 @@ print(X_data.shape)
 print(y_data.shape)
 ```
 
-    (2054, 11)
-    (2054, 1)
+    (2059, 11)
+    (2059, 1)
     
 
 ### Transformation der Daten
@@ -1149,70 +1137,70 @@ X_scaled_data
   <tbody>
     <tr>
       <th>2015-08-25</th>
-      <td>0.000320</td>
-      <td>0.000413</td>
+      <td>0.000288</td>
+      <td>0.000382</td>
       <td>0.087378</td>
       <td>0.076386</td>
-      <td>0.333897</td>
+      <td>0.333396</td>
       <td>0.257724</td>
       <td>0.447368</td>
-      <td>0.000390</td>
+      <td>0.000360</td>
       <td>0.800000</td>
       <td>0.166667</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-26</th>
-      <td>0.000315</td>
-      <td>0.000412</td>
+      <td>0.000283</td>
+      <td>0.000381</td>
       <td>0.089021</td>
       <td>0.097446</td>
-      <td>0.333924</td>
+      <td>0.333423</td>
       <td>0.254459</td>
       <td>0.631579</td>
-      <td>0.000349</td>
+      <td>0.000322</td>
       <td>0.833333</td>
       <td>0.333333</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-27</th>
-      <td>0.000334</td>
-      <td>0.000410</td>
+      <td>0.000300</td>
+      <td>0.000379</td>
       <td>0.101965</td>
       <td>0.135497</td>
-      <td>0.333973</td>
+      <td>0.333472</td>
       <td>0.276440</td>
       <td>0.631579</td>
-      <td>0.000360</td>
+      <td>0.000332</td>
       <td>0.866667</td>
       <td>0.500000</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-28</th>
-      <td>0.000330</td>
-      <td>0.000407</td>
+      <td>0.000297</td>
+      <td>0.000377</td>
       <td>0.114915</td>
       <td>0.239393</td>
-      <td>0.334021</td>
+      <td>0.333520</td>
       <td>0.273698</td>
       <td>0.605263</td>
-      <td>0.000372</td>
+      <td>0.000343</td>
       <td>0.900000</td>
       <td>0.666667</td>
       <td>0.636364</td>
     </tr>
     <tr>
       <th>2015-08-29</th>
-      <td>0.000390</td>
-      <td>0.000406</td>
+      <td>0.000351</td>
+      <td>0.000375</td>
       <td>0.152030</td>
       <td>0.347686</td>
-      <td>0.334117</td>
+      <td>0.333617</td>
       <td>0.344430</td>
       <td>0.578947</td>
-      <td>0.000388</td>
+      <td>0.000358</td>
       <td>0.933333</td>
       <td>0.833333</td>
       <td>0.636364</td>
@@ -1232,78 +1220,78 @@ X_scaled_data
       <td>...</td>
     </tr>
     <tr>
-      <th>2021-04-08</th>
-      <td>0.914596</td>
-      <td>0.980690</td>
-      <td>0.510678</td>
-      <td>0.353071</td>
-      <td>0.694194</td>
-      <td>0.569672</td>
-      <td>0.736842</td>
-      <td>0.950808</td>
-      <td>0.233333</td>
-      <td>0.500000</td>
-      <td>0.272727</td>
-    </tr>
-    <tr>
-      <th>2021-04-09</th>
-      <td>0.942777</td>
-      <td>0.984577</td>
-      <td>0.512790</td>
-      <td>0.329025</td>
-      <td>0.706271</td>
-      <td>0.605376</td>
-      <td>0.736842</td>
-      <td>0.959594</td>
-      <td>0.266667</td>
-      <td>0.666667</td>
-      <td>0.272727</td>
-    </tr>
-    <tr>
-      <th>2021-04-10</th>
-      <td>0.952364</td>
-      <td>0.988076</td>
-      <td>0.514631</td>
-      <td>0.326686</td>
-      <td>0.717580</td>
-      <td>0.617247</td>
-      <td>0.973684</td>
-      <td>0.971376</td>
-      <td>0.300000</td>
-      <td>0.833333</td>
-      <td>0.272727</td>
-    </tr>
-    <tr>
-      <th>2021-04-11</th>
-      <td>0.944283</td>
-      <td>0.988384</td>
-      <td>0.512219</td>
-      <td>0.301568</td>
-      <td>0.714305</td>
-      <td>0.599213</td>
-      <td>0.973684</td>
-      <td>0.983017</td>
-      <td>0.333333</td>
-      <td>1.000000</td>
-      <td>0.272727</td>
-    </tr>
-    <tr>
       <th>2021-04-13</th>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>0.521104</td>
-      <td>0.315905</td>
-      <td>0.749852</td>
-      <td>0.667333</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
+      <td>0.966645</td>
+      <td>0.951089</td>
+      <td>0.544041</td>
+      <td>0.311402</td>
+      <td>0.838183</td>
+      <td>0.736895</td>
+      <td>0.947368</td>
+      <td>0.943190</td>
       <td>0.400000</td>
       <td>0.166667</td>
       <td>0.272727</td>
     </tr>
+    <tr>
+      <th>2021-04-14</th>
+      <td>1.000000</td>
+      <td>0.980064</td>
+      <td>0.563203</td>
+      <td>0.360939</td>
+      <td>0.918719</td>
+      <td>0.765662</td>
+      <td>0.973684</td>
+      <td>0.962224</td>
+      <td>0.433333</td>
+      <td>0.333333</td>
+      <td>0.272727</td>
+    </tr>
+    <tr>
+      <th>2021-04-15</th>
+      <td>0.965391</td>
+      <td>0.990536</td>
+      <td>0.565864</td>
+      <td>0.323438</td>
+      <td>0.941666</td>
+      <td>0.683658</td>
+      <td>0.973684</td>
+      <td>0.978906</td>
+      <td>0.466667</td>
+      <td>0.500000</td>
+      <td>0.272727</td>
+    </tr>
+    <tr>
+      <th>2021-04-16</th>
+      <td>0.930828</td>
+      <td>1.000000</td>
+      <td>0.556935</td>
+      <td>0.300275</td>
+      <td>0.920230</td>
+      <td>0.609685</td>
+      <td>0.947368</td>
+      <td>0.994144</td>
+      <td>0.500000</td>
+      <td>0.666667</td>
+      <td>0.272727</td>
+    </tr>
+    <tr>
+      <th>2021-04-18</th>
+      <td>0.822011</td>
+      <td>0.999675</td>
+      <td>0.522708</td>
+      <td>0.237072</td>
+      <td>0.800449</td>
+      <td>0.430564</td>
+      <td>0.921053</td>
+      <td>1.000000</td>
+      <td>0.566667</td>
+      <td>1.000000</td>
+      <td>0.272727</td>
+    </tr>
   </tbody>
 </table>
-<p>2054 rows × 11 columns</p>
+<p>2059 rows × 11 columns</p>
 </div>
 
 
@@ -1368,7 +1356,7 @@ X_train_random.shape
 
 
 
-    (1819, 31, 11)
+    (1824, 31, 11)
 
 
 
@@ -1405,7 +1393,7 @@ model.summary()
     _________________________________________________________________
     Layer (type)                 Output Shape              Param #   
     =================================================================
-    lstm_2 (LSTM)                (None, 15)                1620      
+    lstm (LSTM)                  (None, 15)                1620      
     _________________________________________________________________
     dropout_3 (Dropout)          (None, 15)                0         
     _________________________________________________________________
@@ -1436,65 +1424,65 @@ history = model.fit(
 ```
 
     Epoch 1/30
-    52/52 [==============================] - 2s 15ms/step - loss: 0.0766 - val_loss: 0.0119
+    52/52 [==============================] - 2s 15ms/step - loss: 0.0830 - val_loss: 0.0049
     Epoch 2/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0201 - val_loss: 0.0038
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0120 - val_loss: 0.0022
     Epoch 3/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0105 - val_loss: 0.0022
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0069 - val_loss: 0.0016
     Epoch 4/30
-    52/52 [==============================] - 1s 10ms/step - loss: 0.0087 - val_loss: 0.0014
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0055 - val_loss: 0.0014
     Epoch 5/30
-    52/52 [==============================] - 0s 9ms/step - loss: 0.0063 - val_loss: 0.0011
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0043 - val_loss: 0.0012
     Epoch 6/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0053 - val_loss: 8.5012e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0037 - val_loss: 0.0012
     Epoch 7/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0056 - val_loss: 7.3449e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0031 - val_loss: 0.0011
     Epoch 8/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0035 - val_loss: 7.8060e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0030 - val_loss: 9.8658e-04
     Epoch 9/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0034 - val_loss: 6.6498e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0028 - val_loss: 0.0010
     Epoch 10/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0030 - val_loss: 4.8950e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0023 - val_loss: 8.7019e-04
     Epoch 11/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0029 - val_loss: 5.5658e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0027 - val_loss: 8.5181e-04
     Epoch 12/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0023 - val_loss: 5.7148e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0022 - val_loss: 8.3948e-04
     Epoch 13/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0036 - val_loss: 4.7864e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0018 - val_loss: 8.3702e-04
     Epoch 14/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0023 - val_loss: 3.2884e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0021 - val_loss: 7.2040e-04
     Epoch 15/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0029 - val_loss: 3.8314e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 7.8280e-04
     Epoch 16/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0022 - val_loss: 3.9532e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 6.6268e-04
     Epoch 17/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0021 - val_loss: 3.9324e-04
+    52/52 [==============================] - 1s 10ms/step - loss: 0.0020 - val_loss: 7.6451e-04
     Epoch 18/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0019 - val_loss: 4.1153e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0016 - val_loss: 6.7662e-04
     Epoch 19/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0020 - val_loss: 3.2188e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0019 - val_loss: 6.6556e-04
     Epoch 20/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0020 - val_loss: 4.9009e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0016 - val_loss: 6.3437e-04
     Epoch 21/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0020 - val_loss: 3.6681e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 6.1234e-04
     Epoch 22/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0018 - val_loss: 5.0682e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 5.6071e-04
     Epoch 23/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 3.8934e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 5.4795e-04
     Epoch 24/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 4.5951e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 5.4818e-04
     Epoch 25/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0014 - val_loss: 3.5801e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0012 - val_loss: 5.8539e-04
     Epoch 26/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0013 - val_loss: 4.4426e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 6.3964e-04
     Epoch 27/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0019 - val_loss: 3.2878e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0014 - val_loss: 5.4724e-04
     Epoch 28/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0013 - val_loss: 2.5702e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 5.6394e-04
     Epoch 29/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0017 - val_loss: 4.1342e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0015 - val_loss: 5.6015e-04
     Epoch 30/30
-    52/52 [==============================] - 0s 8ms/step - loss: 0.0013 - val_loss: 3.1057e-04
+    52/52 [==============================] - 0s 8ms/step - loss: 0.0014 - val_loss: 5.2395e-04
     
 
 Die loss-Rate sollte bei einem Modell immer so gering wie nur möglich sein. In dem folgendem Diagramm ist gut zu sehen, dass die loss-Rate in den ersten Epochen noch relativ hoch war und sich dann immer mehr einer Zahl nahe 0,0015 angegelichen hat. Die Rate wurde dann auch ziemlich konstant über die restlichen Epochen gehalten. 
@@ -1531,7 +1519,7 @@ plt.show()
 
 
     
-![png](output_77_0.png)
+![png](output_75_0.png)
     
 
 
@@ -1557,7 +1545,23 @@ plt.show();
 
 
     
-![png](output_80_0.png)
+![png](output_78_0.png)
+    
+
+
+
+```python
+plt.plot(np.arange(0, 365), y_train[:365], 'g', label="true")
+plt.plot(np.arange(0, 365), predicted_price[:365], 'r', label="prediction")
+plt.ylabel('Price')
+plt.xlabel('Time Step')
+plt.legend()
+plt.show();
+```
+
+
+    
+![png](output_79_0.png)
     
 
 
@@ -1573,7 +1577,7 @@ plt.show();
 
 
     
-![png](output_81_0.png)
+![png](output_80_0.png)
     
 
 
@@ -1598,7 +1602,7 @@ plt.show();
 
 
     
-![png](output_83_0.png)
+![png](output_82_0.png)
     
 
 
@@ -1663,7 +1667,7 @@ for tweet in tweets:
     create_dates.append(epoch_time)
 ```
 
-    {'text': 'When #Nvidia gamer customers complained in Feb over GPU supply shortage due to #CryptoMining they announced production &amp; sale of #Cryptocurrency #Eth Mining Processors - &amp; now estimate $150M in rev for its #crypto product!\n\n#eTorox\nhttps://t.co/w7XebmHu6l\nhttps://t.co/9rsWLCFFhr', 'id': '1381950294372798467', 'public_metrics': {'retweet_count': 0, 'reply_count': 0, 'like_count': 1, 'quote_count': 0}, 'created_at': '2021-04-13T12:40:00.000Z'}
+    {'id': '1383624271822417923', 'created_at': '2021-04-18T03:31:47.000Z', 'text': 'This scam claimed to allow clients to invest in a trading pool managed by a “master trader” called Steven Twain. #MTI #bitcoin #cryptocurrency https://t.co/DQ5ochtwfC', 'public_metrics': {'retweet_count': 13, 'reply_count': 4, 'like_count': 44, 'quote_count': 1}}
     
 
 Hier übergeben wir unseren Sentimentmodel den Batch an gefetchten Tweets. Dannach formatieren wir noch das Sentiment, sodass es von -1 bis 1 geht. Somit kann man besser unterscheiden, ob Tweets negativ oder positiv gemeint sind.
@@ -1684,21 +1688,11 @@ for i in range(5):
     print("{} - {} - {}".format(d,t,p))
 ```
 
-    1618317600.0 - When #Nvidia gamer customers complained in Feb over GPU supply shortage due to #CryptoMining they announced production &amp; sale of #Cryptocurrency #Eth Mining Processors - &amp; now estimate $150M in rev for its #crypto product!
-    
-    #eTorox
-    https://t.co/w7XebmHu6l
-    https://t.co/9rsWLCFFhr - 0.015010833740234375
-    1618317900.0 - Today's newsletter is out: A.J. Hinch gets easy redemption, the A's president talks about paying players in cryptocurrency, Bill James and Jon Heyman are both full of shit, and West Virginia wants to pay you to move there.  https://t.co/QtanjfqbjI - -0.1930304765701294
-    1618318055.0 - It's not every day I get to talk to one of crypto's leading news publications @Cointelegraph in an interview, but when I do, I talk markets!
-    
-    Find out my thoughts on the $ETH, $XRP controversies, alt season, and my price predictions in this new blog post!
-    
-    https://t.co/meCeS3iopd - -0.4473927617073059
-    1618318221.0 - Bitcoin, the world’s largest cryptocurrency, was at $62,741 Tuesday morning; the highest it's reached yet. 
-    https://t.co/8zbfq9J02K - 0.21376252174377441
-    1618318227.0 - Bitcoin, the world’s largest cryptocurrency, was at $62,741 Tuesday morning; the highest it's reached yet. 
-    https://t.co/B8SnOIg5iq - 0.21376252174377441
+    1618716707.0 - This scam claimed to allow clients to invest in a trading pool managed by a “master trader” called Steven Twain. #MTI #bitcoin #cryptocurrency https://t.co/DQ5ochtwfC - 0.3408404588699341
+    1618716765.0 - The digital asset #Ethereum touched an all-time high on April 16, 2021, reaching $2,533 per ETH. https://t.co/fgMK0mVgFS - 0.31600141525268555
+    1618716962.0 - Tax cheats cost the U.S. far more than previously thought — and cryptocurrency is part of the problem, IRS commissioner says https://t.co/uUwC4dowjr - -0.24571555852890015
+    1618717502.0 - After Ethering Serius Jones, ARP Emerges As Most Dangerous Man in Battle Rap https://t.co/hj7Be37OHh - 0.27101635932922363
+    1618718031.0 - just made the eth long of my life - 0.2723346948623657
     
 
 Da wir den aktuellen Sentimenttrend bestimmen wollen implementieren wir eine Simple Moving Average
@@ -1742,7 +1736,7 @@ plt.show()
 
 
     
-![png](output_98_0.png)
+![png](output_97_0.png)
     
 
 
@@ -1797,7 +1791,7 @@ plt.show()
 
 
     
-![png](output_102_0.png)
+![png](output_101_0.png)
     
 
 
@@ -1827,7 +1821,7 @@ plt.show()
 
 
     
-![png](output_104_0.png)
+![png](output_103_0.png)
     
 
 
@@ -1921,7 +1915,7 @@ for i in range(days_in_future):
 print(y_predicted_all)
 ```
 
-    [2092.2715, 2073.6265, 2063.6436, 2057.164, 2052.5066, 2050.6074, 2051.2395, 2053.5042, 2056.1667, 2060.7139, 2065.2168, 2071.6477, 2080.609, 2088.301, 2096.2368, 2109.2986, 2122.8496, 2138.9326, 2147.1602, 2159.994, 2167.4915, 2176.7798, 2185.1917, 2192.2021, 2198.481, 2203.2542, 2207.3948, 2209.821, 2212.1824, 2213.046]
+    [2284.8516, 2308.7874, 2323.3335, 2334.8848, 2351.8909, 2365.3315, 2377.4165, 2392.6086, 2404.4707, 2410.1423, 2404.9104, 2405.7192, 2411.0747, 2406.7961, 2378.739, 2369.7656, 2368.461, 2367.797, 2372.501, 2380.9988, 2404.8696, 2410.6248, 2416.4885, 2420.61, 2426.1545, 2429.0803, 2428.9766, 2427.2515, 2383.3, 2380.743]
     
 
 
@@ -1938,7 +1932,7 @@ plt.show()
 
 
     
-![png](output_109_0.png)
+![png](output_108_0.png)
     
 
 
