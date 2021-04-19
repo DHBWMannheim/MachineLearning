@@ -532,10 +532,6 @@ plot_cm(test_labels, test_predictions_baseline)
 
 Die ROC-Kurve beschreibt hier Confusion Matrizen mit unterschiedlichen Thresholds von 0 bis 1. Dabei wird insbesondere das Verhältnis zwischen True Positives und False Positives betrachtet.
 
-(0,0) besagt, alle positiven Tweets wurden korrekt predicted, alle negativen falsch
-
-(1,1) besagt, alle negativen Tweets wurden korrekt predicted, alle positiven falsch
-
 Wie bereits erwähnt beträgt die AUC 87.84 und da die Kurve über der Diagonale liegt ist das Modell besser als der Zufall, sowohl im Training, als auch im Test.
 
 
